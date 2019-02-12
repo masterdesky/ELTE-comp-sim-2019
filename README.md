@@ -1,2 +1,1 @@
-# ELTE_Comp_Simulations_2019
-Repository for my coursework for "Computer simulations" class (Tutor: József Stéger) @ ELTE
+# Computer Simulations 2018-2019/2 @ ELTE
