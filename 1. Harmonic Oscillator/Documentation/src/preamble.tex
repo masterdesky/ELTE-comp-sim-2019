@@ -1,0 +1,48 @@
+\usepackage[utf8]{inputenc}
+\usepackage[english,magyar]{babel}
+\usepackage[T1]{fontenc}
+
+% Code snippets
+\usepackage{minted}
+\def\code#1{\texttt{#1}}
+
+% Quotes
+\usepackage[autostyle=false]{csquotes}
+
+% Tables
+\usepackage{makecell}
+
+% Required for inserting image files
+\usepackage{graphicx}
+\usepackage[justification=centering]{caption}
+\graphicspath{{./images/}}
+\usepackage{wrapfig}
+
+% Section titles
+\usepackage{titlesec}
+\titleformat{\section}{\bfseries\normalsize}{\thesection. }{0em}{\MakeUppercase}
+\titleformat{\subsection}{\bfseries\small}{\thesubsection. }{0em}{\MakeUppercase}
+
+% Hyperlinks
+\usepackage[unicode]{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,      
+    urlcolor=cyan,
+    citecolor = cyan,
+    pdftitle={Gönbözstudomány},
+    pdfpagemode=FullScreen,
+}
+
+% \cdot instead of asterisk (*) symbol
+\mathcode`\*="8000
+{\catcode`\*\active\gdef*{\cdot}}
+
+% Two columns
+\usepackage{multicol}
+\setlength\columnsep{20pt}
+
+% Biblography
+\usepackage[defernumbers=true,backend=biber,sorting=none]{biblatex}
+\addbibresource{bibliography.bib}
