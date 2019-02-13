@@ -23,9 +23,7 @@ void getInput ( ) {
     cin >> periods;
     cout << "Enter steps per period: ";
     cin >> stepsPerPeriod;
-    //cout << "Enter output file name: ";
-    //cin >> fileName;
-    fileName = "../out/sho.txt";
+    fileName = "../out/sho.dat";
 }
 
 void EulerCromer (double dt) {
@@ -38,8 +36,14 @@ double energy ( ) {
     return 0.5 * (v * v + omega * omega * x * x);
 }
 
-int main ( ) {
-    getInput();
+int main(int argc, char* argv[]) {
+    omega = atof(argv[1]);
+    x = atof(argv[2]);
+    v = atof(argv[3]);
+    periods = atoi(argv[4]);
+    stepsPerPeriod = atoi(argv[5]);
+    fileName = "../out/sho.dat";
+
     ofstream file(fileName.c_str());
     if (!file) {
         cerr << "Cannot open " << fileName << "\nExiting ...\n";
@@ -49,12 +53,12 @@ int main ( ) {
     double T = 2 * pi / omega;
     double dt = T / stepsPerPeriod;
     double t = 0;
-    file << t << '\t' << x << '\t' << v << '\n';
+    file << t << '\t' << x << '\t' << v << '\t' << energy() << '\n';
     for (int p = 1; p <= periods; p++) {
         for (int s = 0; s < stepsPerPeriod; s++) {
             EulerCromer(dt);
             t += dt;
-            file << t << '\t' << x << '\t' << v << '\n';
+            file << t << '\t' << x << '\t' << v << '\t' << energy() << '\n';
         }
         cout << "Period = " << p << "\tt = " << t
              << "\tx = " << x << "\tv = " << v
