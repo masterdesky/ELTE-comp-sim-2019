@@ -10,21 +10,8 @@ int periods;           // number of periods to integrate
 int stepsPerPeriod;    // number of time steps dt per period
 string fileName;       // name of output file
 
-void getInput();                 // for user to input parameters
 void EulerCromer(double dt);     // takes an Euler-Cromer step
 double energy();                 // computes the energy
-
-void getInput ( ) {
-    cout << "Enter omega: ";
-    cin >> omega;
-    cout << "Enter x(0) and v(0): ";
-    cin >> x >> v;
-    cout << "Enter number of periods: ";
-    cin >> periods;
-    cout << "Enter steps per period: ";
-    cin >> stepsPerPeriod;
-    fileName = "../out/sho.dat";
-}
 
 void EulerCromer (double dt) {
     double a = - omega * omega * x;
