@@ -23,8 +23,9 @@ void getInput ( ) {
     cin >> periods;
     cout << "Enter steps per period: ";
     cin >> stepsPerPeriod;
-    cout << "Enter output file name: ";
-    cin >> fileName;
+    //cout << "Enter output file name: ";
+    //cin >> fileName;
+    fileName = "../out/sho.txt";
 }
 
 void EulerCromer (double dt) {
