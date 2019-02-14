@@ -6,15 +6,20 @@
 \usepackage{minted}
 \def\code#1{\texttt{#1}}
 
+% Colour
+\usepackage{color}
+\usepackage[dvipsnames]{xcolor}
+
 % Quotes
 \usepackage[autostyle=false]{csquotes}
+\newcommand{\q}[1]{„#1''} % Redefine quotations
 
 % Tables
 \usepackage{makecell}
 
 % Required for inserting image files
 \usepackage{graphicx}
-\usepackage[justification=centering]{caption}
+\usepackage[font={small,it}, justification=centering]{caption}
 \graphicspath{{./images/}}
 \usepackage{wrapfig}
 

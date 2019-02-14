@@ -1,6 +1,6 @@
 \selectlanguage{english}
 \begin{abstract}
-    \noindent A \emph{Számítógépes szimulációk} című laboratúrium első alkalmával az egyszerű, 1 dimenziós harmonikus oszcillátor numerikus megoldását járjuk körül, mely a félévi tárgy bevezetőjeként szolgál. A szimuláció forráskódja C++ nyelven, az ábrák pedig egy Jupyter Notebook-ban futó Python 3 kernel alatt készültek. A beadandó első célja a forráskóddal történő ismerkedés, valamint a paraméterek változtatásával történő különböző kezdőfeltételek beállítása és a szimuláció futtatása volt. Ezt követően az ebből kapott különböző kimenetek, megadott szempontok alapján történő elemzése volt a feladatunk. \\
+    \noindent A \emph{Számítógépes szimulációk} című laboratúrium első alkalmával az egyszerű, 1 dimenziós harmonikus oszcillátor numerikus megoldását járjuk körül, mely a félévi tárgy bevezetőjeként szolgál. A szimuláció forráskódja C++ nyelven, az adatok elemzése és az ábrák pedig egy Jupyter Notebook-ban futó Python 3 kernel alatt készültek. A beadandó első célja a forráskóddal történő ismerkedés, valamint a paraméterek változtatásával történő különböző kezdőfeltételek beállítása és a szimuláció futtatása volt. Ezt követően az ebből kapott különböző kimenetek, megadott szempontok alapján történő elemzése volt a feladatunk. \\
 \end{abstract}
 \selectlanguage{magyar}
 
@@ -20,7 +20,7 @@ Ennek a differenciálegyenletnek az analitikus megoldását egy megfelelő Ansat
 A numerikus megoldáshoz a mozgásegyenlet alábbi formáját használjuk fel:
 
 \begin{equation} \label{eq:1.3}
-    \frac{d^{2} x \left( t \right) }{d t^{2}} = - \omega^{2} x \left( t \right) 
+    \frac{d^{2} x \left( t \right) }{d t^{2}} = - \omega^{2} * x \left( t \right) 
 \end{equation}
 Ugyanis ezt felbonthatjuk a következő két, elsőrendő, csatolt egyenletre:
 
@@ -44,11 +44,11 @@ A negyedik feladat során a szimuláció futásidejét kell tesztelnünk és meg
 A szimuláció forráskódja C++ nyelven készült és az Euler-Cromer megoldási módszert alkalmazza, mely az Euler módszer apró bővítéssel ellátott verziója. Az Euler módszer lényege a következő, a fent ismertetett egyenleteken keresztül bemutatva\cite{csabaidiff}:
 
 \begin{equation}
-    x \left(t + \Delta t \right) = x \left( t \right) + v \left( t \right) * \Delta t
+    v \left(t + \Delta t \right) = v \left( t \right) - \omega^{2} * x \left( t \right) * \Delta t
 \end{equation}
 
 \begin{equation}
-    v \left(t + \Delta t \right) = v \left( t \right) + x \left( t \right) * \Delta t
+    x \left(t + \Delta t \right) = x \left( t \right) + v \left( t \right) * \Delta t
 \end{equation}
 
 \begin{equation}
@@ -57,11 +57,11 @@ A szimuláció forráskódja C++ nyelven készült és az Euler-Cromer megoldás
 Ennek módosított variációja a már említett Euler-Cromer módszer, ahol a második lépésben nem a $t$, hanem a $t + \Delta t$ helyen levő értékkel történik a kiértékelés. A módszer kontraintuitívnak tűnhet az alábbi módon:
 
 \begin{equation}
-    x \left(t + \Delta t \right) = x \left( t \right) + v \left( t \right) * \Delta t
+    v \left(t + \Delta t \right) = v \left( t \right) - \omega^{2} * x \left( t \right) * \Delta t
 \end{equation}
 
 \begin{equation}
-    v \left(t + \Delta t \right) = v \left( t \right) + x \left( t + \Delta \right) * \Delta t
+    x \left(t + \Delta t \right) = x \left( t \right) + v \left( t + \Delta t \right) * \Delta t
 \end{equation}
 
 \begin{equation}
@@ -71,7 +71,7 @@ Mindkét esetben az $x \left( t = 0 \right)$ és a $v \left( t = 0 \right)$ ért
 Várakozásaink szerint az utóbbi módszer előnye, hogy szinte megtartja az energiát, míg az első nem\cite{cromer}. Ez persze egyéb módszerek segítségével még tovább javítható\cite{Iserles-2003}. Ennek vizsgálata majd a harmadik részfeladatban fog megtörténni.
 
 \subsection{A rendelkezésre álló kód modosításai}
-A forráskódot egy segéd batch file segítségével fordítottam le, abban clang fordítót használva, mely kimeneti binárisa így egy \code{sho.exe} lett. Az \cite{szamszin} linken elérhető forráskód ellenben apró módosításokra szorult. Ezek a módosítások elsősorban azt eredményezték, hogy a szimuláció végleges kimenetként egy \emph{sho.dat} nevű file-t generál, ami az adatokat az \ref{tab1}. táblázatnak megfelelő elrendezésben tartalmazza:
+A forráskódot egy segéd batch file segítségével fordítottam le, abban clang fordítót használva, mely kimeneti binárisa így egy \code{sho.exe} lett. Az \cite{szamszin} linken elérhető forráskód ellenben apró módosításokra szorult. Ezek a módosítások elsősorban azt eredményezték, hogy a szimuláció végleges kimenetként egy \emph{sho.dat} nevű file-t generál, ami az adatokat az \ref{tab1}. táblázatnak megfelelő elrendezésben tartalmazza.
 
 \begin{center}
 \begin{tabular}{c|c|c|c}
@@ -98,29 +98,73 @@ $t_{max}$ & $x \left( \Delta t_{max} \right)$ & $v \left( \Delta t_{max} \right)
 Ahol $\omega$ a rezgés körfrekvenciáját, $x_{0}$ és $v_{0}$ rendre a kezdő kitérés és sebesség nagyságát, $t$ a szimulálandó periódusok számát, $dt$ pedig a periódusonkénti lépésközt jelenti. A véglegesített forráskód és az azt futtató Notebook elérhető GitHub-on\cite{github}.
 
 \section{Kiértékelés}
-Az adatok elemzését egy Jupyter Notebook Python 3 kernelében végeztem el. Ez a notebook szintén elérhető a szimuláció GitHub repository-jában\cite{github}. Az első feladatban a harmonikus oszcillátor kitérésének és sebességének viselkedését figyeltük az idő függvényében. A szimuláció kezdőfeltételei a következőek voltak:
+Az adatok elemzését egy Jupyter Notebook Python 3 kernelében végeztem el. Ez a notebook szintén elérhető a szimuláció GitHub repository-jában\cite{github}.
+
+\subsection{Kitérés-idő diagram}
+Az első feladatban a harmonikus oszcillátor kitérésének és sebességének viselkedését figyeltük az idő függvényében. A szimuláció kezdőfeltételei a \ref{tab2}. ábrán olvashatóak.
 \begin{center}
 \begin{tabular}{c|c}
 Szim. paraméter & Érték \\
 \hline \hline
-$\omega$ & 15 \\
+$\omega$ & $15$ \\
 \hline
-$x_{0}$ & 0 \\
+$x_{0}$ & $0$ \\
 \hline
-$v_{0}$ & 5 \\
+$v_{0}$ & $5$ \\
 \hline
-$t$ & 10 \\
+$t$ & $10$ \\
 \hline
-$dt$ & 100 \\
+$dt$ & $100$ \\
 \hline
 \end{tabular}
 \end{center}
 \captionof{table}{A szimuláció első feladatának kezdőfeltételei}\label{tab2}
 \hfill \break \hfill \break
 {\centering\includegraphics[width=.5\textwidth]{time_def_vel.eps}}
-\captionof{figure}{\\Fent: Idő - Kitérés grafikon\\Alul: Idő- Sebesség grafikon}\label{fig1}
+\captionof{figure}{\\Fent: Idő - Kitérés grafikon\\Alul: Idő - Sebesség grafikon}\label{fig1}
 \hfill \break \hfill \break
-A szimuláció során kapott adatok az első feladatnak megfelelően az \ref{fig1}. ábrán láthatóak. Ez a mélyebb megértés céljából egy sebesség-idő grafikonnal is ki lett bővítve. A kapott kép alapján az elméletből elvártakat kaptuk vissza. Az oszcillátor sebessége zéró kitérésnél a legnagyobb, maximális kitérésnél pont $0$, majd pedig előjelet vált.
+A szimuláció során kapott adatok az első feladatnak megfelelően az \ref{fig1}. ábrán láthatóak. Ez a mélyebb megértés céljából egy sebesség-idő grafikonnal is ki lett bővítve. A kapott kép alapján az elméletből elvártakat kaptuk vissza. Az oszcillátor sebessége zéró kitérésnél a legnagyobb, maximális kitérésnél $0$, majd pedig előjelet vált.
+
+\subsection{Kitérés-sebesség diagram}
+A második feladatban a szimulációt nagyon hosszú idejű futtatásra kellett vizsgálni. Az elméleti ismertetőben már szó volt róla, hogy az Euler-Cromer módszer a natív Euler módszernél jobban, teljesen megőrzi az energiát. Az elmélet szerint azt várnánk, hogy bármilyen hosszú idejű futtatásra is, a kitérés-sebesség diagram egy ellipszist adna eredményül, mely ugyanabba a pontba tér vissza egész számú periódusra vizsgálva. Mivel azonban a differenciálegyenlet ezen megoldási módszere sem teljesen tökéletes, így ez hosszabb idejű futtatásra már nem lesz igaz. Míg rövid idejű futás esetén ($\sim 10$ periódus) nem lesz számottevő eltérés, addig nagyobb számú periódus ($\sim 1000$) esetén a kitérés-idő diagram nem ugyanabba a pontba fog visszatérni. A két eset összehasnolítása a \ref{fig2}. ábrán látható, a hozzá felhasznált szimulációs paraméterek pedig a \ref{tab3}. táblázatban találhatóak.
+
+\begin{center}
+\begin{tabular}{c|c|c}
+Szim. paraméter & Rövid futás & Hosszú futás \\
+\hline \hline
+$\omega$ & $0.8$ & $0.8$ \\
+\hline
+$x_{0}$ & $0$ & $0$ \\
+\hline
+$v_{0}$ & $5$ & $5$ \\
+\hline
+$t$ & $10$ & $1000$ \\
+\hline
+$dt$ & $100$ & $100$ \\
+\hline
+\end{tabular}
+\end{center}
+\captionof{table}{A szimuláció második feladatának kezdőfeltételei}\label{tab3}
+\hfill \break \hfill \break
+{\centering\includegraphics[width=.5\textwidth]{def_vel_2.eps}}
+\captionof{figure}{Euler-Cromer rövid és hosszú futás\\Fent: Kitérés - Sebesség grafikon rövid futásidő esetén\\Alul: Kitérés - Sebesség grafikon hosszú futásidő esetén}\label{fig2}
+\hfill \break \hfill \break
+A \ref{fig2}. ábrán a \textcolor{blue}{kék $X$} a szimuláció kezdőpontját míg a \textcolor{ForestGreen}{zöld $X$} a végpontját jelenti. Míg az első ábrán teljesen fedik egymást, addig a másodikon tisztán látszik, hogy a periódusok nagy mértékben \q{elcsúsznak}.
+
+\subsection{Energiamegmaradás}
+A harmadik feladatban a natív Euler és az Euler-Cromer differenciálegyenlet megoldási módszereket kellett összehasonlítanunk az energiamegmaradás szempontjából. Ez szorosan kapcsolódik az előbbi feladathoz, ugyanis itt is szintén a szimuláció hosszabb távú pontossága a kérdés. \\
+Hogy összehasonlíthassuk a két módszert, az eredeti - már módosított - file-ról másolatot készítettem és abban implementálva az Euler-Cromer módszer módosításával a natív Euler módszert. Ezt a két programot szimultán futtattam, azonos paraméterekkel, amiket újfent egy Jupyter Notebook-ban futó Python 3 kernel segítségével hasonlítottam össze. \\
+Az Euler módszer esetén az energia nem marad meg, folyamatosan növekszik az idő előrehaladtával. A \ref{fig3}. ábrán az így futtatott program idő-energia, kitérés-energia és sebesség-energia grafikonjait láthatjuk. A szimuláció kezdőfeltételei megegyeznek az \ref{tab1}. táblázatban szereplő értékekkel. Ezzel összehasonlítandó, az Euler-Cromer módszer segítségével lefuttatott szimuláció - azonos paraméterekkel - energiaviszonyairól a \ref{fig4}. ábráról tájékozódhatunk.
+{\centering\includegraphics[width=.5\textwidth]{energy_euler.eps}}
+\captionof{figure}{Euler módszer\\Fent: Idő - Energia\\Középen: Kitérés - Energia\\Alul: Sebesség - Energia}\label{fig3}
+\hfill \break \hfill \break
+{\centering\includegraphics[width=.5\textwidth]{energy.eps}}
+\captionof{figure}{Euler-Cromer módszer\\Fent: Idő - Energia\\Középen: Kitérés - Energia\\Alul: Sebesség - Energia}\label{fig4}
+\hfill \break \hfill \break
+Ok, done.
+
+
+
 
 \end{multicols}
 \hrulefill
