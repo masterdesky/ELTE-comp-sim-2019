@@ -2,16 +2,16 @@
 #include <fstream>
 #include <iostream>
 #include <string>
-using namespace std;
+#include <chrono>
 
 double omega;          // the natural frequency
 double x, v;           // position and velocity at time t
 int periods;           // number of periods to integrate
 int stepsPerPeriod;    // number of time steps dt per period
-string fileName;       // name of output file
+std::string fileName;       // name of output file
 
 void Euler(double dt);     // takes an Euler step
-double energy();                 // computes the energy
+double energy();           // computes the energy
 
 void Euler (double dt) {
     double a = - omega * omega * x;
@@ -30,28 +30,33 @@ int main(int argc, char* argv[]) {
     v = atof(argv[3]);
     periods = atoi(argv[4]);
     stepsPerPeriod = atoi(argv[5]);
-    fileName = "../out/sho.dat";
+    fileName = "../out/sho_e.dat";
 
-    ofstream file(fileName.c_str());
+    std::ofstream file(fileName.c_str());
     if (!file) {
-        cerr << "Cannot open " << fileName << "\nExiting ...\n";
+        std::cerr << "Cannot open " << fileName << "\nExiting ...\n";
         return 1;
     }
     const double pi = 4 * atan(1.0);
     double T = 2 * pi / omega;
     double dt = T / stepsPerPeriod;
     double t = 0;
-    file << t << '\t' << x << '\t' << v << '\t' << energy() << '\n';
+
+    // Time measurement init and starts
+    auto start = std::chrono::steady_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - start);
+
+    file << t << '\t' << x << '\t' << v << '\t' << energy() << duration.count() << '\n';
     for (int p = 1; p <= periods; p++) {
         for (int s = 0; s < stepsPerPeriod; s++) {
             Euler(dt);
             t += dt;
-            file << t << '\t' << x << '\t' << v << '\t' << energy() << '\n';
+            duration = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - start);
+            file << t << '\t' << x << '\t' << v << '\t' << energy() << duration.count() << '\n';
         }
-        cout << "Period = " << p << "\tt = " << t
+        std::cout << "Period = " << p << "\tt = " << t
              << "\tx = " << x << "\tv = " << v
-             << "\tenergy = " << energy() << endl;
+             << "\tenergy = " << energy() << std::endl;
     }
     file.close();
 }
-

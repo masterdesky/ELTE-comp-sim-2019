@@ -71,33 +71,34 @@ Mindkét esetben az $x \left( t = 0 \right)$ és a $v \left( t = 0 \right)$ ért
 Várakozásaink szerint az utóbbi módszer előnye, hogy szinte megtartja az energiát, míg az első nem\cite{cromer}. Ez persze egyéb módszerek segítségével még tovább javítható\cite{Iserles-2003}. Ennek vizsgálata majd a harmadik részfeladatban fog megtörténni.
 
 \subsection{A rendelkezésre álló kód modosításai}
-Az eredeti forráskódon több változtatást kellett végrehajtani, hogy a kiszabott feladatokat meg lehessen vele oldani. Első lépésben az eredeti \code{sho.cpp} file-ból létrehoztam egy \code{sho\_e.cpp} és egy \code{sho\_ec.cpp} varióciót. Az utóbbi az eredeti Euler-Cromer formulával megadott forráskód volt, míg az első az ezt módosított Euler módszert implementálja. A forráskódokat egy-egy segéd batch file segítségével fordítottam le, abban clang fordítót használva, mely kimeneti binárisa így egy \code{sho\_e.exe} és egy \code{sho\_ec.exe} lett. Az \cite{szamszin} linken elérhető forráskód ellenben egyéb pontokban is apró módosításokra szorult. \\
-A második alapvető módosítás eredménye az volt, hogy a szimulációk végleges kimenetként egy \emph{sho.dat} nevű file-t generálnak, ami az adatokat az \ref{tab1}. táblázatnak megfelelő elrendezésben tartalmazza.
+Az eredeti forráskódon több változtatást kellett végrehajtani, hogy a kiszabott feladatokat meg lehessen vele oldani. Első lépésben az eredeti \code{sho.cpp} file-ból létrehoztam egy \code{sho\_e.cpp} és egy \code{sho\_ec.cpp} varióciót. Az utóbbi az eredeti Euler-Cromer formulával megadott forráskód volt, míg az elsőben - az eredeti változtatásával - az Euler módszert implementáltam. A forráskódokat egy-egy segéd batch file segítségével fordítottam le, abban clang fordítót használva, mely kimeneti binárisa így egy \code{sho\_e.exe} és egy \code{sho\_ec.exe} lett. Az \cite{szamszin} linken elérhető forráskód ellenben egyéb pontokban is apró módosításokra szorult. \\
+A második alapvető módosítás eredménye az, hogy a szimulációk végleges kimenetként egy \emph{sho.dat} nevű file-t generálnak, ami az adatokat az \ref{tab1}. táblázatnak megfelelő elrendezésben tartalmazza.
 
 \begin{center}
-\begin{tabular}{c|c|c|c}
-$t$ & $x \left( t \right)$ & $v \left( t \right)$ & $E \left( t \right)$ \\
+\begin{tabular}{c|c|c|c|c}
+$t$ & $x \left( t \right)$ & $v \left( t \right)$ & $E \left( t \right)$ & $T_{fut} \left( t \right)$ \\
 \hline \hline
-$0$ & $x \left( 0 \right)$ & $v \left( 0 \right)$  & $E \left( 0 \right)$ \\
+$0$ & $x \left( 0 \right)$ & $v \left( 0 \right)$  & $E \left( 0 \right)$ & $T_{fut} \left( 0 \right)$ \\
 \hline
-$\Delta t$ & $x \left( \Delta t \right)$ & $v \left( \Delta t \right)$ & $E \left( \Delta t \right)$ \\
+$\Delta t$ & $x \left( \Delta t \right)$ & $v \left( \Delta t \right)$ & $E \left( \Delta t \right)$ & $T_{fut} \left( \Delta t \right)$ \\
 \hline
-$2 \Delta t$ & $x \left( 2 \Delta t \right)$ & $v \left( 2 \Delta t \right)$ & $E \left( 2 \Delta t \right)$ \\
+$2 \Delta t$ & $x \left( 2 \Delta t \right)$ & $v \left( 2 \Delta t \right)$ & $E \left( 2 \Delta t \right)$ & $T_{fut} \left( 2 \Delta t \right)$ \\
 \hline
-\vdots & \vdots & \vdots & \vdots \\
+\vdots & \vdots & \vdots & \vdots & \vdots \\
 \hline
-$t_{max}$ & $x \left( \Delta t_{max} \right)$ & $v \left( \Delta t_{max} \right)$ & $E \left( \Delta t_{max} \right)$ \\
+$t_{max}$ & $x \left( \Delta t_{max} \right)$ & $v \left( \Delta t_{max} \right)$ & $E \left( \Delta t_{max} \right)$ &$T_{fut}$ \\
 \hline
 \end{tabular}
 \end{center}
 \captionof{table}{Az output \code{.dat} file szerkezete}\label{tab1}
 \hfill \break \hfill \break
-\noindent A következő változtatás motivációja a programok könnyebb futtathatóságának célja volt. Ezt megoldandó a programok a szimulációs paramétereket terminálban megadott argumentumok formájában várják (ebből 5 darab van), amiket végül egy Juypter Notebook cella futtat az alábbi módon, ahol az XX a tetszőlegesen választható \code{e}, vagy \code{ec} végződést helyettesíti:
+\noindent A következő változtatás motivációja a programok könnyebb futtathatóságának célja volt. Ezt megoldandó, a programok a szimulációs paramétereket terminálban megadott argumentumok formájában várják (ebből 5 darab van), amiket végül egy Juypter Notebook cella futtat az alábbi módon, ahol az XX a tetszőlegesen választható \code{e}, vagy \code{ec} végződést helyettesíti:
 \begin{center}
     \code{! {\textbackslash}sho\_XX.exe omega x\_0 v\_0 t dt}
 \end{center}
-Ahol $\omega$ a rezgés körfrekvenciáját, $x_{0}$ és $v_{0}$ rendre a kezdő kitérés és sebesség nagyságát, $t$ a szimulálandó periódusok számát, $dt$ pedig a periódusonkénti lépésközt jelenti. A véglegesített forráskód és az azt futtató Notebook elérhető GitHub-on\cite{github}. \\
-Az utolsó módosítás a negyedik feladat időméréséhez szükséges módosításokat foglalja magába. Ez összesen egy time() függvény megfelelő modon történő implementlását takarja.
+Ahol $\omega$ a rezgés körfrekvenciáját, $x_{0}$ és $v_{0}$ rendre a kezdő kitérés és sebesség nagyságát, $t$ a szimulálandó periódusok számát, $dt$ pedig a periódusonkénti lépésközt jelenti. \\
+Az utolsó módosítás a negyedik feladatban szereplő időméréshez szükséges módosításokat foglalja magába. Ezt a C++ chrono library mikroszekundomos pontosságú időmérési módszerét felhasználva oldottam meg. \\
+A véglegesített forráskód és az azt futtató Notebook elérhető GitHub-on\cite{github}.
 
 \section{Kiértékelés}
 Az adatok elemzését egy Jupyter Notebook Python 3 kernelében végeztem el. Ez a notebook szintén elérhető a szimuláció GitHub repository-jában\cite{github}.
@@ -122,7 +123,7 @@ $dt$ & $100$ \\
 \end{center}
 \captionof{table}{A szimuláció első feladatának kezdőfeltételei}\label{tab2}
 \hfill \break \hfill \break
-{\centering\includegraphics[width=.5\textwidth]{time_def_vel.eps}}
+{\centering\includegraphics[width=.5\textwidth]{time_def_vel_eulercromer.eps}}
 \captionof{figure}{\\Fent: Idő - Kitérés grafikon\\Alul: Idő - Sebesség grafikon}\label{fig1}
 \hfill \break \hfill \break
 A szimuláció során kapott adatok az első feladatnak megfelelően az \ref{fig1}. ábrán láthatóak. Ez a mélyebb megértés céljából egy sebesség-idő grafikonnal is ki lett bővítve. A kapott kép alapján az elméletből elvártakat kaptuk vissza. Az oszcillátor sebessége zéró kitérésnél a legnagyobb, maximális kitérésnél $0$, majd pedig előjelet vált.
@@ -148,7 +149,7 @@ $dt$ & $100$ & $100$ \\
 \end{center}
 \captionof{table}{A szimuláció második feladatának kezdőfeltételei}\label{tab3}
 \hfill \break \hfill \break
-{\centering\includegraphics[width=.5\textwidth]{def_vel_2.eps}}
+{\centering\includegraphics[width=.5\textwidth]{def_vel_long_eulercromer.eps}}
 \captionof{figure}{Euler-Cromer rövid és hosszú futás\\Fent: Kitérés - Sebesség grafikon rövid futásidő esetén\\Alul: Kitérés - Sebesség grafikon hosszú futásidő esetén}\label{fig2}
 \hfill \break \hfill \break
 A \ref{fig2}. ábrán a \textcolor{blue}{kék $X$} a szimuláció kezdőpontját míg a \textcolor{ForestGreen}{zöld $X$} a végpontját jelenti. Míg az első ábrán teljesen fedik egymást, addig a másodikon tisztán látszik, hogy a periódusok nagy mértékben \q{elcsúsznak}.
@@ -161,10 +162,10 @@ Az Euler módszer esetén az energia nem marad meg, folyamatosan növekszik az i
 {\centering\includegraphics[width=.5\textwidth]{energy_euler.eps}}
 \captionof{figure}{Euler módszer\\Fent: Idő - Energia\\Középen: Kitérés - Energia\\Alul: Sebesség - Energia}\label{fig3}
 \hfill \break \hfill \break
-{\centering\includegraphics[width=.5\textwidth]{def_vel_euler.eps}}
-\captionof{figure}{Euler módszer\\Kitérés - Sebesség grafikon}\label{fig4}
+{\centering\includegraphics[width=.5\textwidth]{def_vel_long_euler.eps}}
+\captionof{figure}{Euler rövid és hosszú futás\\Fent: Kitérés - Sebesség grafikon rövid futásidő esetén\\Alul: Kitérés - Sebesség grafikon hosszú futásidő esetén}\label{fig4}
 \hfill \break \hfill \break
-{\centering\includegraphics[width=.5\textwidth]{energy.eps}}
+{\centering\includegraphics[width=.5\textwidth]{energy_eulercromer.eps}}
 \captionof{figure}{Euler-Cromer módszer\\Fent: Idő - Energia\\Középen: Kitérés - Energia\\Alul: Sebesség - Energia}\label{fig5}
 
 \subsection{Futásidő}
