@@ -92,9 +92,9 @@ $t_{max}$ & $x \left( \Delta t_{max} \right)$ & $v \left( \Delta t_{max} \right)
 \end{center}
 \captionof{table}{Az output \code{.dat} file szerkezete}\label{tab1}
 \hfill \break \hfill \break
-\noindent A következő változtatás motivációja a programok könnyebb futtathatóságának célja volt. Ezt megoldandó, a programok a szimulációs paramétereket terminálban megadott argumentumok formájában várják (ebből 5 darab van), amiket végül egy Juypter Notebook cella futtat az alábbi módon, ahol az XX a tetszőlegesen választható \code{e}, vagy \code{ec} végződést helyettesíti:
+\noindent A következő változtatás motivációja a programok könnyebb futtathatóságának célja volt. Ezt megoldandó, a programok a szimulációs paramétereket terminálban megadott argumentumok formájában várják (ebből 5 darab van), amiket végül egy Juypter Notebook cella futtat az \code{os} package segítségével az alábbi módon, ahol az XX a tetszőlegesen választható \code{e}, vagy \code{ec} végződést helyettesíti:
 \begin{center}
-    \code{! {\textbackslash}sho\_XX.exe omega x\_0 v\_0 t dt}
+    \code{os.system('sho\_XX.exe\ ' + str(omega) +\ ' '\ + str(x\_0) +\ ' '\ +  str(v\_0) +\ ' '\ + str(t) +\ ' '\ + str(dt))}
 \end{center}
 Ahol $\omega$ a rezgés körfrekvenciáját, $x_{0}$ és $v_{0}$ rendre a kezdő kitérés és sebesség nagyságát, $t$ a szimulálandó periódusok számát, $dt$ pedig a periódusonkénti lépésközt jelenti. \\
 Az utolsó módosítás a negyedik feladatban szereplő időméréshez szükséges módosításokat foglalja magába. Ezt a C++ chrono library mikroszekundomos pontosságú időmérési módszerét felhasználva oldottam meg. \\
@@ -123,7 +123,7 @@ $dt$ & $100$ \\
 \end{center}
 \captionof{table}{A szimuláció első feladatának kezdőfeltételei}\label{tab2}
 \hfill \break \hfill \break
-{\centering\includegraphics[width=.5\textwidth]{time_def_vel_eulercromer.eps}}
+{\centering\includegraphics[width=.5\textwidth]{time_def_vel_eulercromer.pdf}}
 \captionof{figure}{\\Fent: Idő - Kitérés grafikon\\Alul: Idő - Sebesség grafikon}\label{fig1}
 \hfill \break \hfill \break
 A szimuláció során kapott adatok az első feladatnak megfelelően az \ref{fig1}. ábrán láthatóak. Ez a mélyebb megértés céljából egy sebesség-idő grafikonnal is ki lett bővítve. A kapott kép alapján az elméletből elvártakat kaptuk vissza. Az oszcillátor sebessége zéró kitérésnél a legnagyobb, maximális kitérésnél $0$, majd pedig előjelet vált.
@@ -149,7 +149,7 @@ $dt$ & $100$ & $100$ \\
 \end{center}
 \captionof{table}{A szimuláció második feladatának kezdőfeltételei}\label{tab3}
 \hfill \break \hfill \break
-{\centering\includegraphics[width=.5\textwidth]{def_vel_long_eulercromer.eps}}
+{\centering\includegraphics[width=.5\textwidth]{def_vel_long_eulercromer.pdf}}
 \captionof{figure}{Euler-Cromer rövid és hosszú futás\\Fent: Kitérés - Sebesség grafikon rövid futásidő esetén\\Alul: Kitérés - Sebesség grafikon hosszú futásidő esetén}\label{fig2}
 \hfill \break \hfill \break
 A \ref{fig2}. ábrán a \textcolor{blue}{kék $X$} a szimuláció kezdőpontját míg a \textcolor{ForestGreen}{zöld $X$} a végpontját jelenti. Míg az első ábrán teljesen fedik egymást, addig a másodikon tisztán látszik, hogy a periódusok nagy mértékben \q{elcsúsznak}.
@@ -159,13 +159,13 @@ A harmadik feladatban a natív Euler és az Euler-Cromer differenciálegyenlet m
 Hogy összehasonlíthassuk a két módszert, az eredeti - már módosított - file-ról másolatot készítettem és abban implementálva az Euler-Cromer módszer módosításával a natív Euler módszert. Ezt a két programot szimultán futtattam, azonos paraméterekkel, amiket újfent egy Jupyter Notebook-ban futó Python 3 kernel segítségével hasonlítottam össze. \\
 Az Euler módszer esetén az energia nem marad meg, folyamatosan növekszik az idő előrehaladtával. Ez abból adódik, hogy az oszcillátor kitérése és sebessége a nem teljesen optimális léptetés miatt szintén folyamatosan növekszik, az energia pedig ezek által határozódik meg. A \ref{fig3}. ábrán az így futtatott program idő-energia, kitérés-energia és sebesség-energia grafikonjait láthatjuk. A szimuláció kezdőfeltételei megegyeznek az \ref{tab2}. Az \ref{fig4}. ábrán érdekességképpen az Euler módszerrel kapott kitérés-sebesség grafikont ábrázoljuk. A \ref{fig2}. ábrához hasonló jelölés segítségével látható, hogy a várt ellipszis helyett egy kifelé haladó spirált kapunk. táblázatban szereplő értékekkel. Ezzel összehasonlítandó, az Euler-Cromer módszer segítségével lefuttatott szimuláció - azonos paraméterekkel - energiaviszonyairól a \ref{fig5}. ábráról tájékozódhatunk.
 \hfill \break \hfill \break
-{\centering\includegraphics[width=.5\textwidth]{energy_euler.eps}}
+{\centering\includegraphics[width=.5\textwidth]{energy_euler.pdf}}
 \captionof{figure}{Euler módszer\\Fent: Idő - Energia\\Középen: Kitérés - Energia\\Alul: Sebesség - Energia}\label{fig3}
 \hfill \break \hfill \break
-{\centering\includegraphics[width=.5\textwidth]{def_vel_long_euler.eps}}
+{\centering\includegraphics[width=.5\textwidth]{def_vel_long_euler.pdf}}
 \captionof{figure}{Euler rövid és hosszú futás\\Fent: Kitérés - Sebesség grafikon rövid futásidő esetén\\Alul: Kitérés - Sebesség grafikon hosszú futásidő esetén}\label{fig4}
 \hfill \break \hfill \break
-{\centering\includegraphics[width=.5\textwidth]{energy_eulercromer.eps}}
+{\centering\includegraphics[width=.5\textwidth]{energy_eulercromer.pdf}}
 \captionof{figure}{Euler-Cromer módszer\\Fent: Idő - Energia\\Középen: Kitérés - Energia\\Alul: Sebesség - Energia}\label{fig5}
 
 \subsection{Futásidő}
@@ -175,7 +175,7 @@ A negyedik és egyben utolsó feladat a program futásidejének vizsgálata volt
     \item A periódusok számának növelésével
     \item A periódusonkénti $dt$ lépésköz hosszának csökkentésével
 \end{enumerate}
-Jelen esetben az egyszerűség kedvéért az első módszer segítségével határoztam meg a futásidő változását. Az egyéb paramétereket a \ref{tab3}. táblázatban szereplőkkel megegyezően vettem fel. Az idő méréséhez standard \code{time()} függvényt használtam.
+Jelen esetben az egyszerűség kedvéért az első módszer segítségével határoztam meg a futásidő változását. Az egyéb paramétereket a \ref{tab3}. táblázatban szereplőkkel megegyezően vettem fel. Az idő méréséhez a chrono library \code{std::chrono::steady\_clock} \code{std::chrono::microseconds}, mikroszekundum pontosságú függvényét használtam.
 
 \end{multicols}
 \hrulefill
