@@ -44,19 +44,20 @@ int main(int argc, char* argv[]) {
 
     // Time measurement init and starts
     auto start = std::chrono::steady_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - start);
+    std::chrono::microseconds duration;
 
-    file << t << '\t' << x << '\t' << v << '\t' << energy() << duration.count() << '\n';
+    file << t << '\t' << x << '\t' << v << '\t' << energy() << '\t' << duration.count() << '\n';
     for (int p = 1; p <= periods; p++) {
         for (int s = 0; s < stepsPerPeriod; s++) {
             Euler(dt);
             t += dt;
             duration = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - start);
-            file << t << '\t' << x << '\t' << v << '\t' << energy() << duration.count() << '\n';
+            file << t << '\t' << x << '\t' << v << '\t' << energy() << '\t' << duration.count() << '\n';
         }
         std::cout << "Period = " << p << "\tt = " << t
              << "\tx = " << x << "\tv = " << v
-             << "\tenergy = " << energy() << std::endl;
+             << "\tenergy = " << energy()
+             << "\truntieme = " << duration.count() << std::endl;
     }
     file.close();
 }
