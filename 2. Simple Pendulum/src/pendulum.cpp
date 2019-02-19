@@ -3,11 +3,9 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-using namespace std;
 
 #include "vector.hpp"        // vectors with components of type double
 #include "odeint.hpp"        // ODE integration routines, Runge-Kutta ...
-using namespace cpl;
 
 const double pi = 4 * atan(1.0);
 
@@ -19,11 +17,11 @@ double Omega_D = 2.0/3.0;    // frequency of driving force
 double F_D = 0.9;            // amplitude of driving force
 bool nonlinear;              // linear if false
 
-Vector f(const Vector& x) {  // extended derivative vector
+cpl::Vector f(const cpl::Vector& x) {  // extended derivative vector
     double t = x[0];
     double theta = x[1];
     double omega = x[2];
-    Vector f(3);             // Vector with 3 components
+    cpl::Vector f(3);             // Vector with 3 components
     f[0] = 1;
     f[1] = omega;
     if (nonlinear)
@@ -33,39 +31,37 @@ Vector f(const Vector& x) {  // extended derivative vector
     return f;
 }
 
-int main() {
-    cout << " Nonlinear damped driven pendulum\n"
-         << " --------------------------------\n"
-         << " Enter linear or nonlinear: ";
-    string response;
-    cin >> response;
+int main(int argc, char* argv[]) {
+
+    double theta, omega, t_max;
+
+    std::cout << " Nonlinear damped driven pendulum\n"
+              << " --------------------------------\n"
+              << " Enter linear or nonlinear: ";
+    std::string response;
+    std::cin >> response;
     nonlinear = (response[0] == 'n');
-    cout<< " Length of pendulum L: ";
-    cin >> L;
-    cout<< " Enter damping coefficient q: ";
-    cin >> q;
-    cout << " Enter driving frequencey Omega_D: ";
-    cin >> Omega_D;
-    cout << " Enter driving amplitude F_D: ";
-    cin >> F_D;
-    cout << " Enter theta(0) and omega(0): ";
-    double theta, omega, tMax;
-    cin >> theta >> omega;
-    cout << " Enter integration time t_max: ";
-    cin >> tMax;
+
+    L = atof(argv[1]);                  // Length of pendulum L
+    q = atof(argv[2]);                  // Damping coefficient q
+    Omega_D = atof(argv[3]);            // Driving frequencey Omega_D
+    F_D = atof(argv[4]);                // Driving amplitude F_D
+    theta = atof(argv[5]);              // Theta(0)
+    omega = atof(argv[6]);              // Omega(0)
+    t_max = atof(argv[7]);               // Integration time t_max
 
     double dt = 0.05;
     double accuracy = 1e-6;
-    ofstream dataFile("../out/pendulum.data");
+    std::ofstream dataFile("..\\out\\pendulum.dat");
 
     double t = 0;
-    Vector x(3);
+    cpl::Vector x(3);
     x[0] = t;
     x[1] = theta;
     x[2] = omega;
 
-    while (t < tMax) {
-        adaptiveRK4Step(x, dt, accuracy, f);
+    while (t < t_max) {
+        cpl::adaptiveRK4Step(x, dt, accuracy, f);
         t = x[0], theta = x[1], omega = x[2];
         if (nonlinear) {
             while (theta >= pi) theta -= 2 * pi;
@@ -74,7 +70,7 @@ int main() {
         dataFile << t << '\t' << theta << '\t' << omega << '\n';
     }
 
-    cout << " Output data to file pendulum.data" << endl;
+    std::cout << " Output data to file pendulum.dat" << std::endl;
     dataFile.close();
 }
 
