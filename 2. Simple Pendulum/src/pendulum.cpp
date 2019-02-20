@@ -45,8 +45,8 @@ int main(int argc, char* argv[]) {
     Omega_D = atof(argv[4]);            // Driving frequencey Omega_D
     F_D = atof(argv[5]);                // Driving amplitude F_D
     theta = atof(argv[6]);              // Theta(0)
-    omega = atof(argv[7]);              // Omega(0)
-    t_max = atof(argv[8]);               // Integration time t_max
+    omega = atof(argv[7]);              // Omega(ω)
+    t_max = atof(argv[8]);              // Integration time t_max
 
     double dt = 0.05;
     double accuracy = 1e-6;
@@ -65,6 +65,7 @@ int main(int argc, char* argv[]) {
             while (theta >= pi) theta -= 2 * pi;
             while (theta < -pi) theta += 2 * pi;
         }
+        // Returns in radian (0) and radian\s (ω)
         dataFile << t << '\t' << theta << '\t' << omega << '\n';
     }
 
