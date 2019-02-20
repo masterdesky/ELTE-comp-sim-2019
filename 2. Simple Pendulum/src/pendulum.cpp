@@ -36,19 +36,17 @@ int main(int argc, char* argv[]) {
     double theta, omega, t_max;
 
     std::cout << " Nonlinear damped driven pendulum\n"
-              << " --------------------------------\n"
-              << " Enter linear or nonlinear: ";
-    std::string response;
-    std::cin >> response;
+              << " --------------------------------\n";
+    std::string response = argv[1];
     nonlinear = (response[0] == 'n');
 
-    L = atof(argv[1]);                  // Length of pendulum L
-    q = atof(argv[2]);                  // Damping coefficient q
-    Omega_D = atof(argv[3]);            // Driving frequencey Omega_D
-    F_D = atof(argv[4]);                // Driving amplitude F_D
-    theta = atof(argv[5]);              // Theta(0)
-    omega = atof(argv[6]);              // Omega(0)
-    t_max = atof(argv[7]);               // Integration time t_max
+    L = atof(argv[2]);                  // Length of pendulum L
+    q = atof(argv[3]);                  // Damping coefficient q
+    Omega_D = atof(argv[4]);            // Driving frequencey Omega_D
+    F_D = atof(argv[5]);                // Driving amplitude F_D
+    theta = atof(argv[6]);              // Theta(0)
+    omega = atof(argv[7]);              // Omega(0)
+    t_max = atof(argv[8]);               // Integration time t_max
 
     double dt = 0.05;
     double accuracy = 1e-6;
