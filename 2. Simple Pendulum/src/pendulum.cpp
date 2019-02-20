@@ -40,13 +40,15 @@ int main(int argc, char* argv[]) {
     std::string response = argv[1];
     nonlinear = (response[0] == 'n');
 
-    L = atof(argv[2]);                  // Length of pendulum L
-    q = atof(argv[3]);                  // Damping coefficient q
-    Omega_D = atof(argv[4]);            // Driving frequencey Omega_D
-    F_D = atof(argv[5]);                // Driving amplitude F_D
-    theta = atof(argv[6]);              // Theta(0)
-    omega = atof(argv[7]);              // Omega(ω)
-    t_max = atof(argv[8]);              // Integration time t_max
+    std::string mode = argv[2];
+
+    L = atof(argv[3]);                  // Length of pendulum L
+    q = atof(argv[4]);                  // Damping coefficient q
+    Omega_D = atof(argv[5]);            // Driving frequencey Omega_D
+    F_D = atof(argv[6]);                // Driving amplitude F_D
+    theta = atof(argv[7]);              // Theta(0)
+    omega = atof(argv[8]);              // Omega(ω)
+    t_max = atof(argv[9]);              // Integration time t_max
 
     double dt = 0.05;
     double accuracy = 1e-6;
@@ -57,16 +59,26 @@ int main(int argc, char* argv[]) {
     x[0] = t;
     x[1] = theta;
     x[2] = omega;
+    double error;
+
+    // STARTING ITERATION
+    // Returns in radian (0) and radian\s (ω)
+    dataFile << t << '\t' << theta << '\t' << omega << '\t' << dt << '\n';
 
     while (t < t_max) {
-        cpl::adaptiveRK4Step(x, dt, accuracy, f);
-        t = x[0], theta = x[1], omega = x[2];
+        if(mode[0] == 'r') {
+            cpl::adaptiveRK4Step(x, dt, accuracy, f);
+        }
+        else if(mode[0] == 'c') {
+            cpl::adaptiveRKCKStep(x, dt, accuracy, f);
+        }
+        t = x[0], theta = x[1], omega = x[2], error = dt;
         if (nonlinear) {
             while (theta >= pi) theta -= 2 * pi;
             while (theta < -pi) theta += 2 * pi;
         }
         // Returns in radian (0) and radian\s (ω)
-        dataFile << t << '\t' << theta << '\t' << omega << '\n';
+        dataFile << t << '\t' << theta << '\t' << omega << '\t' << error << '\n';
     }
 
     std::cout << " Output data to file pendulum.dat" << std::endl;
