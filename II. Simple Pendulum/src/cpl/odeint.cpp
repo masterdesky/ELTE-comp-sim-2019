@@ -9,6 +9,57 @@ using namespace std;
 
 namespace cpl {
 
+//  Simple Euler
+void EulerStep(Vector& x, double tau,
+             Vector derivs(const Vector&))
+{
+    x += tau * derivs(x);
+}
+
+//  Adaptive step size control using Euler and step doubling
+void adaptiveEulerStep(Vector& x, double& tau, double accuracy,
+                     Vector derivs(const Vector&))
+{
+    const double SAFETY = 0.9, PGROW = -0.2, PSHRINK = -0.25,
+                 ERRCON = 1.89E-4, TINY = 1.0e-30;
+    int n = x.dimension();
+    Vector x_half(n), x_full(n), Delta(n);
+    Vector scale = derivs(x);
+    for (int i = 0; i < n; i++)
+        scale[i] = abs(x[i]) + abs(scale[i] * tau) + TINY;
+    double err_max;
+    while (true) {
+        // take two half steps
+        double tau_half = tau / 2;
+        x_half = x;
+        EulerStep(x_half, tau_half, derivs);
+        EulerStep(x_half, tau_half, derivs);
+        // take full step
+        x_full = x;
+        EulerStep(x_full, tau, derivs);
+        // estimate error
+        Delta = x_half - x_full;
+        err_max = 0;
+        for (int i = 0; i < n; i++)
+            err_max = max(err_max, abs(Delta[i]) / scale[i]);
+        err_max /= accuracy;
+        if (err_max <= 1.0)
+            break;
+        double tau_temp = SAFETY * tau * pow(err_max, PSHRINK);
+        if (tau >= 0.0)
+            tau = max(tau_temp, 0.1 * tau);
+        else
+            tau = min(tau_temp, 0.1 * tau);
+        if (abs(tau) == 0.0) {
+            cerr << "adaptiveEulerStep: step size underflow\naborting ..."
+                 << endl;
+            exit(EXIT_FAILURE);
+        }
+    }
+    tau *= (err_max > ERRCON ? SAFETY * pow(err_max, PGROW) : 5.0);
+    x = x_half + Delta / 15.0;
+}
+
 //  Fourth order Runge-Kutta
 void RK4Step(Vector& x, double tau,
              Vector derivs(const Vector&))

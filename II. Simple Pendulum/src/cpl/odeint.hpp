@@ -9,6 +9,21 @@ class Vector;
 
 // ODE integration routines adapted from Numerical Recipes
 
+//  take a single Euler step
+extern void EulerStep(
+    Vector& x,                        //  extended solution vector
+    double tau,                       //  step size
+    Vector derivs(const Vector& x)    //  extended derivative vector
+);
+
+//  take one adaptive Euler step using step doubling
+extern void adaptiveEulerStep(
+    Vector& x,                        //  extended solution vector
+    double& tau,                      //  recommended step size
+    double accuracy,                  //  desired solution accuracy
+    Vector derivs(const Vector&)      //  extended derivative vector
+);
+
 //  take a single 4th order Runge-Kutta step
 extern void RK4Step(
     Vector& x,                        //  extended solution vector
