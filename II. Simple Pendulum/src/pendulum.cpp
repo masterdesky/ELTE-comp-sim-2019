@@ -69,11 +69,14 @@ int main(int argc, char* argv[]) {
         if(mode[0] == 'r') {
             cpl::adaptiveRK4Step(x, dt, accuracy, f);
         }
-        else if(mode[0] == 'c') {
+        else if(mode[0] == 'k') {
             cpl::adaptiveRKCKStep(x, dt, accuracy, f);
         }
         else if(mode[0] == 'e') {
             cpl::adaptiveEulerStep(x, dt, accuracy, f);
+        }
+        else {
+            cpl::adaptiveEulerCromerStep(x, dt, accuracy, f);
         }
         t = x[0], theta = x[1], omega = x[2], error = dt;
         if (nonlinear) {
