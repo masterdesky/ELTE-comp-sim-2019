@@ -9,13 +9,24 @@
 
 const double pi = 4 * atan(1.0);
 
-const double g = 9.8;        // acceleration of gravity
+const double g = 9.8;   // acceleration of gravity
 
-double L = 1.0;              // length of pendulum
-double q = 0.5;              // damping coefficient
-double Omega_D = 2.0/3.0;    // frequency of driving force
-double F_D = 0.9;            // amplitude of driving force
-bool nonlinear;              // linear if false
+bool nonlinear;         // linear if false
+
+static double L;               // Length of pendulum L
+static double q;               // Damping coefficient q
+static double Omega_D;         // Driving frequencey Omega_D
+static double F_D;             // Driving amplitude F_D
+static double theta;           // Angle of deflection of pendulum (0)
+static double omega;           // Velocity of pendulum (ω)
+static double t_max;           // Integration time t_max
+static double dt;              // Stepsize
+static double accuracy;        // Accuracy of simulation
+
+
+double energy() {
+    return 0.5 * (L * L * omega * omega);
+}
 
 cpl::Vector f(const cpl::Vector& x) {  // extended derivative vector
     double t = x[0];
@@ -33,8 +44,7 @@ cpl::Vector f(const cpl::Vector& x) {  // extended derivative vector
 
 int main(int argc, char* argv[]) {
 
-    double theta, omega, t_max, dt, accuracy;
-
+    
     std::cout << " Nonlinear damped driven pendulum\n"
               << " --------------------------------\n";
     std::string response = argv[1];
@@ -46,8 +56,8 @@ int main(int argc, char* argv[]) {
     q = atof(argv[4]);                  // Damping coefficient q
     Omega_D = atof(argv[5]);            // Driving frequencey Omega_D
     F_D = atof(argv[6]);                // Driving amplitude F_D
-    theta = atof(argv[7]);              // Theta(0)
-    omega = atof(argv[8]);              // Omega(ω)
+    theta = atof(argv[7]);              // Angle of deflection of pendulum (0)
+    omega = atof(argv[8]);              // Velocity of pendulum (ω)
     t_max = atof(argv[9]);              // Integration time t_max
     dt = atof(argv[10]);                // Stepsize
     accuracy = atof(argv[11]);          // Accuracy of simulation
@@ -63,7 +73,7 @@ int main(int argc, char* argv[]) {
 
     // STARTING ITERATION
     // Returns in radian (0) and radian\s (ω)
-    dataFile << t << '\t' << theta << '\t' << omega << '\t' << dt << '\n';
+    dataFile << t << '\t' << theta << '\t' << omega << '\t' << dt << '\t' << energy() << '\n';
 
     while (t < t_max) {
         if(mode[0] == 'r') {
@@ -73,10 +83,10 @@ int main(int argc, char* argv[]) {
             cpl::adaptiveRKCKStep(x, dt, accuracy, f);
         }
         else if(mode[0] == 'e') {
-            cpl::adaptiveEulerStep(x, dt, accuracy, f);
+            cpl::EulerStep(x, dt, f);
         }
         else {
-            cpl::adaptiveEulerCromerStep(x, dt, accuracy, f);
+            cpl::EulerCromerStep(x, dt, f);
         }
         t = x[0], theta = x[1], omega = x[2], error = dt;
         if (nonlinear) {
@@ -84,7 +94,7 @@ int main(int argc, char* argv[]) {
             while (theta < -pi) theta += 2 * pi;
         }
         // Returns in radian (0) and radian\s (ω)
-        dataFile << t << '\t' << theta << '\t' << omega << '\t' << error << '\n';
+        dataFile << t << '\t' << theta << '\t' << omega << '\t' << error << '\t' << energy() << '\n';
     }
 
     std::cout << " Output data to file pendulum.dat" << std::endl;

@@ -19,7 +19,7 @@ void Euler (double dt) {
     v += a * dt;
 }
 
-double energy ( ) {
+double energy() {
     return 0.5 * (v * v + omega * omega * x * x);
 }
 

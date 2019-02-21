@@ -75,7 +75,7 @@ void EulerCromerStep(Vector& x, double tau,
     x[0] += tau * derivs(x)[0];
 
     // Velocity
-    x[2] += tau * derivs(x)[1];
+    x[2] += tau * derivs(x)[2];
 
     // Deflection
     x[1] += tau * x[2];
