@@ -15,9 +15,8 @@ double energy();           // computes the energy
 
 void Euler (double dt) {
     double a = - omega * omega * x;
-    double v_temp = v;
+    x += v * dt;
     v += a * dt;
-    x += v_temp * dt;
 }
 
 double energy ( ) {

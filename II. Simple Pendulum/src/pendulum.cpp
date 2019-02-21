@@ -33,7 +33,7 @@ cpl::Vector f(const cpl::Vector& x) {  // extended derivative vector
 
 int main(int argc, char* argv[]) {
 
-    double theta, omega, t_max;
+    double theta, omega, t_max, dt, accuracy;
 
     std::cout << " Nonlinear damped driven pendulum\n"
               << " --------------------------------\n";
@@ -49,9 +49,9 @@ int main(int argc, char* argv[]) {
     theta = atof(argv[7]);              // Theta(0)
     omega = atof(argv[8]);              // Omega(ω)
     t_max = atof(argv[9]);              // Integration time t_max
-
-    double dt = 0.05;
-    double accuracy = 1e-6;
+    dt = atof(argv[10]);                // Stepsize
+    accuracy = atof(argv[11]);          // Accuracy of simulation
+    
     std::ofstream dataFile("..\\out\\pendulum.dat");
 
     double t = 0;

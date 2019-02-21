@@ -11,14 +11,21 @@ namespace cpl {
 
 //  Simple Euler
 void EulerStep(Vector& x, double tau,
-             Vector derivs(const Vector&))
-{
-    x += tau * derivs(x);
+               Vector derivs(const Vector&))
+{   
+    // Time
+    x[0] += tau * derivs(x)[0];
+    
+    // Deflection
+    x[1] += tau * derivs(x)[1];
+    
+    // Velocity
+    x[2] += tau * derivs(x)[2];
 }
 
 //  Adaptive step size control using Euler and step doubling
 void adaptiveEulerStep(Vector& x, double& tau, double accuracy,
-                     Vector derivs(const Vector&))
+                       Vector derivs(const Vector&))
 {
     const double SAFETY = 0.9, PGROW = -0.2, PSHRINK = -0.25,
                  ERRCON = 1.89E-4, TINY = 1.0e-30;
@@ -62,14 +69,21 @@ void adaptiveEulerStep(Vector& x, double& tau, double accuracy,
 
 //  Semi-Implicit, Euler-Cromer
 void EulerCromerStep(Vector& x, double tau,
-             Vector derivs(const Vector&))
+                     Vector derivs(const Vector&))
 {
-    x += tau * derivs(x);
+    // Time
+    x[0] += tau * derivs(x)[0];
+
+    // Velocity
+    x[2] += tau * derivs(x)[1];
+
+    // Deflection
+    x[1] += tau * x[2];
 }
 
 //  Adaptive step size control using Euler-Cromer and step doubling
 void adaptiveEulerCromerStep(Vector& x, double& tau, double accuracy,
-                     Vector derivs(const Vector&))
+                             Vector derivs(const Vector&))
 {
     const double SAFETY = 0.9, PGROW = -0.2, PSHRINK = -0.25,
                  ERRCON = 1.89E-4, TINY = 1.0e-30;
