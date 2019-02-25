@@ -3,15 +3,16 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <time.h>
 using namespace std;
 
-#ifdef __APPLE__             // Mac OS X uses different header
-#  include <GLUT/glut.h>
-#else                        // Unix and Windows
-#  include <GL/gl.h>
-#  include <GL/glu.h>
-#  include <GL/glut.h>
-#endif
+//#ifdef __APPLE__             // Mac OS X uses different header
+//#  include <GLUT/glut.h>
+//#else                        // Unix and Windows
+//#include <GL\\gl.h>
+//#include <GL\\glu.h>
+#include <GL/glut.h>
+//#endif
 
 #include "vector.hpp"        // vectors with components of type double
 #include "odeint.hpp"        // ODE integration routines, Runge-Kutta ...
@@ -21,16 +22,22 @@ const double pi = 4 * atan(1.0);
 
 const double g = 9.8;        // acceleration of gravity
 
-double L = 1.0;              // length of pendulum
-double q = 0.5;              // damping coefficient
-double Omega_D = 2.0/3.0;    // frequency of driving force
-double F_D = 0.9;            // amplitude of driving force
-bool nonlinear;              // linear if false
+bool nonlinear;         // linear if false
+
+static double L;               // Length of pendulum L
+static double q;               // Damping coefficient q
+static double Omega_D;         // Driving frequencey Omega_D
+static double F_D;             // Driving amplitude F_D
+static double theta;           // Angle of deflection of pendulum (0)
+static double omega;           // Velocity of pendulum (ω)
+static double t_max;           // Integration time t_max
+static double dt;              // Stepsize
+static double accuracy;        // Accuracy of simulation
 
 Vector f(const Vector& x) {  // extended derivative vector
     double t = x[0];
-    double theta = x[1];
-    double omega = x[2];
+    theta = x[1];
+    omega = x[2];
     Vector f(3);             // Vector with 3 components
     f[0] = 1;
     f[1] = omega;
@@ -42,33 +49,6 @@ Vector f(const Vector& x) {  // extended derivative vector
 }
 
 Vector x(3);
-
-void getInput() {
-    cout << " Nonlinear damped driven pendulum\n"
-         << " --------------------------------\n"
-         << " Enter linear or nonlinear: ";
-    string response;
-    cin >> response;
-    nonlinear = (response[0] == 'n');
-    cout<< " Length of pendulum L: ";
-    cin >> L;
-    cout<< " Enter damping coefficient q: ";
-    cin >> q;
-    cout << " Enter driving frequency Omega_D: ";
-    cin >> Omega_D;
-    cout << " Enter driving amplitude F_D: ";
-    cin >> F_D;
-    cout << " Enter theta(0) and omega(0): ";
-    double theta, omega;
-    cin >> theta >> omega;
-
-    x[0] = 0;
-    x[1] = theta;
-    x[2] = omega;
-}
-
-double dt = 0.05;
-double accuracy = 1e-6;
 
 void step() {
     adaptiveRK4Step(x, dt, accuracy, f);
@@ -230,7 +210,28 @@ void mouse(int button, int state, int x, int y) {
 
 int main(int argc, char *argv[]) {
     glutInit(&argc, argv);
-    getInput();
+    
+    std::cout << " Nonlinear damped driven pendulum\n"
+              << " --------------------------------\n";
+    std::string response = argv[1];
+    nonlinear = (response[0] == 'n');
+
+    std::string mode = argv[2];
+
+    L = atof(argv[3]);                  // Length of pendulum L
+    q = atof(argv[4]);                  // Damping coefficient q
+    Omega_D = atof(argv[5]);            // Driving frequencey Omega_D
+    F_D = atof(argv[6]);                // Driving amplitude F_D
+    theta = atof(argv[7]);              // Angle of deflection of pendulum (0)
+    omega = atof(argv[8]);              // Velocity of pendulum (ω)
+    t_max = atof(argv[9]);              // Integration time t_max
+    dt = atof(argv[10]);                // Stepsize
+    accuracy = atof(argv[11]);          // Accuracy of simulation
+
+    x[0] = 0;
+    x[1] = theta;
+    x[2] = omega;
+
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
     glutInitWindowSize(600, 600);
     glutInitWindowPosition(100, 100);
