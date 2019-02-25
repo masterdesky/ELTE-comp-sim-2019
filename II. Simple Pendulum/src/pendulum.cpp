@@ -3,6 +3,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <chrono>
 
 #include "vector.hpp"        // vectors with components of type double
 #include "odeint.hpp"        // ODE integration routines, Runge-Kutta ...
@@ -71,30 +72,45 @@ int main(int argc, char* argv[]) {
     x[2] = omega;
     double error;
 
-    // STARTING ITERATION
+    // Time measurement init and starts
+    auto start = std::chrono::steady_clock::now();
+    std::chrono::microseconds duration;
+
+    // STARTING ITERATION: t = 0
     // Returns in radian (0) and radian\s (ω)
-    dataFile << t << '\t' << theta << '\t' << omega << '\t' << dt << '\t' << energy() << '\n';
+    dataFile << t << '\t' << theta << '\t' << omega << '\t' << dt << '\t' << energy() << '\t' << 0 << '\n';
 
     while (t < t_max) {
-        if(mode[0] == 'r') {
+        if(mode == "runge") {
+            cpl::RK4Step(x, dt, f);
+        }
+        else if(mode == "adapt_runge") {
             cpl::adaptiveRK4Step(x, dt, accuracy, f);
         }
-        else if(mode[0] == 'k') {
+
+        else if(mode == "rkck") {
+            cpl::RKCKStep(x, dt, f);
+        }
+        else if(mode == "adapt_rkck") {
             cpl::adaptiveRKCKStep(x, dt, accuracy, f);
         }
-        else if(mode[0] == 'e') {
+
+        else if(mode == "euler") {
             cpl::EulerStep(x, dt, f);
         }
-        else {
+
+        else if(mode == "eulercromer") {
             cpl::EulerCromerStep(x, dt, f);
         }
+
         t = x[0], theta = x[1], omega = x[2], error = dt;
         if (nonlinear) {
             while (theta >= pi) theta -= 2 * pi;
             while (theta < -pi) theta += 2 * pi;
         }
+        duration = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - start);
         // Returns in radian (0) and radian\s (ω)
-        dataFile << t << '\t' << theta << '\t' << omega << '\t' << error << '\t' << energy() << '\n';
+        dataFile << t << '\t' << theta << '\t' << omega << '\t' << error << '\t' << energy() << '\t' << duration.count() << '\n';
     }
 
     std::cout << " Output data to file pendulum.dat" << std::endl;
