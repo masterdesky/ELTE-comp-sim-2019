@@ -2,12 +2,15 @@
 #include <cmath>
 #include <cstdlib>
 #include <iostream>
+#include <vector>
 using namespace std;
 
 #include "vector.hpp"
 #include "odeint.hpp"
 
 namespace cpl {
+
+// #################### SIMPLE PENDULUM ####################
 
 //  Simple Euler
 void EulerStep(Vector& x, double tau,
@@ -159,6 +162,107 @@ void adaptiveRKCKStep(Vector& x, double& tau, double accuracy,
     }
     tau *= (err_max > ERRCON ? SAFETY * pow(err_max, PGROW) : 5.0);
     x = x_temp;
+}
+
+// #################### DOUBLE PENDULUM ####################
+
+//  Simple Euler
+void EulerStep_double(Vector& x, Vector& y, double tau,
+                      std::vector<cpl::Vector> derivs(const Vector&, const Vector&))
+{   
+    // Time
+    x[0] += tau * (derivs(x, y)[0])[0];
+    // Deflection
+    x[1] += tau * (derivs(x, y)[0])[1];
+    // Velocity
+    x[2] += tau * (derivs(x, y)[0])[2];
+
+    // Time
+    y[0] += tau * (derivs(x, y)[1])[0];
+    // Deflection
+    y[1] += tau * (derivs(x, y)[1])[1];
+    // Velocity
+    y[2] += tau * (derivs(x, y)[1])[2];
+}
+
+//  Semi-Implicit, Euler-Cromer
+void EulerCromerStep_double(Vector& x, Vector& y, double tau,
+                            std::vector<cpl::Vector> derivs(const Vector&, const Vector&))
+{
+    // Time
+    x[0] += tau * (derivs(x, y)[0])[0];
+    // Velocity
+    x[2] += tau * (derivs(x, y)[0])[2];
+    // Deflection
+    x[1] += tau * x[2];
+
+    // Time
+    y[0] += tau * (derivs(x, y)[1])[0];
+    // Velocity
+    y[2] += tau * (derivs(x, y)[1])[2];
+    // Deflection
+    y[1] += tau * y[2];
+}
+
+//  Fourth order Runge-Kutta
+void RK4Step_double(Vector& x, Vector& y, double tau,
+                    std::vector<cpl::Vector> derivs(const Vector&, const Vector&))
+{
+    std::vector<cpl::Vector>
+        k1 = {tau * derivs(x, y)[0], tau * derivs(x, y)[1]},
+        k2 = {tau * derivs(x + 0.5 * k1[0], y + 0.5 * k1[1])[0], tau * derivs(x + 0.5 * k1[0], y + 0.5 * k1[1])[1]},
+        k3 = {tau * derivs(x + 0.5 * k2[0], y + 0.5 * k2[1])[0], tau * derivs(x + 0.5 * k2[0], y + 0.5 * k2[1])[1]},
+        k4 = {tau * derivs(x + k3[0], y + k3[1])[0], tau * derivs(x + k3[0], y + k3[1])[1]};
+    x += (k1[0] + 2 * k2[0] + 2 * k3[0] + k4[0]) / 6.0;
+    y += (k1[1] + 2 * k2[1] + 2 * k3[1] + k4[1]) / 6.0;
+}
+
+
+//  Runge-Kutta-Cash-Karp including error estimate
+static void rkck_double(Vector& x, Vector& y, double tau,
+                 std::vector<cpl::Vector> derivs(const Vector&, const Vector&), Vector& x_err, Vector& y_err)
+{
+    const double b21 = 1.0/5.0, b31 = 3.0/40.0, b41 = 3.0/10.0,
+        b51 = -11.0/54.0, b61 = 1631.0/55296.0, b32 = 9.0/40.0,
+        b42 = -9.0/10.0, b52 = 5.0/2.0, b62 = 175.0/512.0, b43 = 6.0/5.0,
+        b53 = -70.0/27.0, b63 = 575.0/13824.0, b54 = 35.0/27.0,
+        b64 = 44275.0/110592.0, b65 = 253.0/4096.0, c1 = 37.0/378.0,
+        c2 = 0.0, c3 = 250.0/621.0, c4 = 125.0/594.0, c5 = 0.0,
+        c6 = 512.0/1771.0, dc1 = c1 - 2825.0/27648.0, dc2 = c2 - 0.0,
+        dc3 = c3 - 18575.0/48384.0, dc4 = c4 - 13525.0/55296.0,
+        dc5 = c5 - 277.0/14336.0, dc6 = c6 - 1.0/4.0;
+
+    std::vector<cpl::Vector>
+        k1 = {tau * derivs(x, y)[0],
+              tau * derivs(x, y)[1]},
+
+        k2 = {tau * derivs(x + b21*k1[0], y + b21*k1[1])[0],
+              tau * derivs(x + b21*k1[0], y + b21*k1[1])[0]},
+
+        k3 = {tau * derivs(x + b31*k1[0] + b32*k2[0], y + b31*k1[1] + b32*k2[1])[0],
+              tau * derivs(x + b31*k1[0] + b32*k2[0], y + b31*k1[1] + b32*k2[1])[1]},
+
+        k4 = {tau * derivs(x + b41*k1[0] + b42*k2[0] + b43*k3[0], y + b41*k1[1] + b42*k2[1] + b43*k3[1])[0],
+              tau * derivs(x + b41*k1[0] + b42*k2[0] + b43*k3[0], y + b41*k1[1] + b42*k2[1] + b43*k3[1])[1]},
+
+        k5 = {tau * derivs(x + b51*k1[0] + b52*k2[0] + b53*k3[0] + b54*k4[0], y + b51*k1[1] + b52*k2[1] + b53*k3[1] + b54*k4[1])[0],
+              tau * derivs(x + b51*k1[0] + b52*k2[0] + b53*k3[0] + b54*k4[0], y + b51*k1[1] + b52*k2[1] + b53*k3[1] + b54*k4[1])[1]},
+
+        k6 = {tau * derivs(x + b61*k1[0] + b62*k2[0] + b63*k3[0] + b64*k4[0] + b65*k5[0], y + b61*k1[1] + b62*k2[1] + b63*k3[1] + b64*k4[1] + b65*k5[1])[0],
+              tau * derivs(x + b61*k1[0] + b62*k2[0] + b63*k3[0] + b64*k4[0] + b65*k5[0], y + b61*k1[1] + b62*k2[1] + b63*k3[1] + b64*k4[1] + b65*k5[1])[1]};
+
+    x += c1*k1[0] + c2*k2[0] + c3*k3[0] + c4*k4[0] + c5*k5[0] + c6*k6[0];
+    y += c1*k1[1] + c2*k2[1] + c3*k3[1] + c4*k4[1] + c5*k5[1] + c6*k6[1];
+    x_err = dc1*k1[0] + dc2*k2[0] + dc3*k3[0] + dc4*k4[0] + dc5*k5[0] + dc6*k6[0];
+    y_err = dc1*k1[1] + dc2*k2[1] + dc3*k3[1] + dc4*k4[1] + dc5*k5[1] + dc6*k6[1];
+}
+
+//  Runge-Kutta-Cash-Karp step
+void RKCKStep_double(Vector& x, Vector& y, double tau, std::vector<cpl::Vector> derivs(const Vector&, const Vector&))
+{
+    Vector x_err(x.dimension());
+    Vector y_err(y.dimension());
+    rkck_double(x, y, tau, derivs, x_err, y_err);
 }
 
 } /* end namespace cpl */

@@ -33,7 +33,7 @@ double energy() {
     return 0.5 * m * (L * L * omega * omega);
 }
 
-cpl::Vector f(const cpl::Vector& x) {  // extended derivative vector
+cpl::Vector derivates(const cpl::Vector& x) {  // extended derivative vector
     t = x[0];
     theta = x[1];
     omega = x[2];
@@ -70,7 +70,7 @@ int main(int argc, char* argv[]) {
     
     std::ofstream dataFile("..\\out\\pendulum.dat");
 
-    // Define containers for parameters of motion
+    // Define containers for parameters of motion, and starting position
     t = 0;
     cpl::Vector x(3);
     x[0] = t;
@@ -87,33 +87,38 @@ int main(int argc, char* argv[]) {
 
     while (t < t_max) {
         if(mode == "runge") {
-            cpl::RK4Step(x, dt, f);
+            cpl::RK4Step(x, dt, derivates);
         }
         else if(mode == "adapt_runge") {
-            cpl::adaptiveRK4Step(x, dt, accuracy, f);
+            cpl::adaptiveRK4Step(x, dt, accuracy, derivates);
         }
 
         else if(mode == "rkck") {
-            cpl::RKCKStep(x, dt, f);
+            cpl::RKCKStep(x, dt, derivates);
         }
         else if(mode == "adapt_rkck") {
-            cpl::adaptiveRKCKStep(x, dt, accuracy, f);
+            cpl::adaptiveRKCKStep(x, dt, accuracy, derivates);
         }
 
         else if(mode == "euler") {
-            cpl::EulerStep(x, dt, f);
+            cpl::EulerStep(x, dt, derivates);
         }
 
         else if(mode == "eulercromer") {
-            cpl::EulerCromerStep(x, dt, f);
+            cpl::EulerCromerStep(x, dt, derivates);
         }
 
-        t = x[0], theta = x[1], omega = x[2], error = dt;
+        t = x[0], theta = x[1], omega = x[2];
+        error = dt;
+
         if (linearity) {
             while (theta >= pi) theta -= 2 * pi;
             while (theta < -pi) theta += 2 * pi;
         }
+        
+        // Runtime test
         duration = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - start);
+        
         // Returns in radian (0) and radian\s (ω)
         dataFile << t << '\t' << theta << '\t' << omega << '\t' << error << '\t' << energy() << '\t' << duration.count() << '\n';
     }

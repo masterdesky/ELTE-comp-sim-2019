@@ -2,12 +2,15 @@
 #define CPL_ODEINT_HPP
 
 #include <iostream>
+#include <vector>
 
 namespace cpl {
 
 class Vector;
 
 // ODE integration routines adapted from Numerical Recipes
+
+// #################### SIMPLE PENDULUM ####################
 
 //  take a single Euler step
 extern void EulerStep(
@@ -51,6 +54,44 @@ extern void adaptiveRKCKStep(
     double& tau,                      //  recommended step size
     double accuracy,                  //  desired solution accuracy
     Vector derivs(const Vector&)      //  extended derivative vector
+);
+
+// #################### DOUBLE PENDULUM ####################
+
+//  take a single Euler step
+extern void EulerStep_double(
+    Vector& x,                        //  extended solution vector_1
+    Vector& y,                        //  extended solution vector_2
+    double tau,                       //  step size
+    std::vector<cpl::Vector> derivs(const Vector& x,
+                  const Vector& y)    //  extended derivative vector
+);
+
+//  take a single Euler step
+extern void EulerCromerStep_double(
+    Vector& x,                        //  extended solution vector_1
+    Vector& y,                        //  extended solution vector_2
+    double tau,                       //  step size
+    std::vector<cpl::Vector> derivs(const Vector& x,
+                  const Vector& y)    //  extended derivative vector
+);
+
+//  take a single 4th order Runge-Kutta step
+extern void RK4Step_double(
+    Vector& x,                        //  extended solution vector_1
+    Vector& y,                        //  extended solution vector_2
+    double tau,                       //  step size
+    std::vector<cpl::Vector> derivs(const Vector& x,
+                  const Vector& y)    //  extended derivative vector
+);
+
+//  take one Runge-Kutta-Cash-Karp step
+extern void RKCKStep_double(
+    Vector& x,                        //  extended solution vector_1
+    Vector& y,                        //  extended solution vector_2
+    double tau,                       //  step size
+    std::vector<cpl::Vector> derivs(const Vector& x,
+                  const Vector& y)    //  extended derivative vector
 );
 
 } /* end namespace cpl */

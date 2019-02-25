@@ -34,7 +34,7 @@ static double t_max;           // Integration time t_max
 static double dt;              // Stepsize
 static double accuracy;        // Accuracy of simulation
 
-Vector f(const Vector& x) {  // extended derivative vector
+Vector derivates(const Vector& x) {  // extended derivative vector
     double t = x[0];
     theta = x[1];
     omega = x[2];
@@ -51,7 +51,7 @@ Vector f(const Vector& x) {  // extended derivative vector
 Vector x(3);
 
 void step() {
-    adaptiveRK4Step(x, dt, accuracy, f);
+    adaptiveRK4Step(x, dt, accuracy, derivates);
 }
 
 double frames_per_second = 30;   // for animation in real time
@@ -228,6 +228,7 @@ int main(int argc, char *argv[]) {
     dt = atof(argv[10]);                // Stepsize
     accuracy = atof(argv[11]);          // Accuracy of simulation
 
+    // Starting paramers t = 0
     x[0] = 0;
     x[1] = theta;
     x[2] = omega;
