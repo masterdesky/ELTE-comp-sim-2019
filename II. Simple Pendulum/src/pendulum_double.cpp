@@ -48,7 +48,7 @@ double energy_2() {
 std::vector<cpl::Vector> derivates(const cpl::Vector& x, const cpl::Vector& y) {             // extended derivative vectors
     double t = x[0];
     double theta_1 = x[1]; double theta_2 = y[1];
-    double omega_1 = x[2]; double omega_2 = x[2];
+    double omega_1 = x[2]; double omega_2 = y[2];
     cpl::Vector f_1(3); cpl::Vector f_2(3);                             // Vectors with 3 components
     
     f_1[0] = 1, f_2[0] = 1;
@@ -86,27 +86,29 @@ std::vector<cpl::Vector> derivates(const cpl::Vector& x, const cpl::Vector& y) {
 int main(int argc, char* argv[]) {
 
     
-    std::cout << " Nonlinear damped driven pendulum\n"
+    std::cout << " Nonlinear damped driven double pendulum\n"
               << " --------------------------------\n";
 
     std::string mode = argv[1];
 
-    L_2 = atof(argv[2]);                // Length of pendulum L_2
-    L_1 = atof(argv[3]);                // Length of pendulum L_1
-    q_1 = atof(argv[4]);                // Damping coefficient q_1
-    q_2 = atof(argv[5]);                // Damping coefficient q_2
-    Omega_D_1 = atof(argv[6]);          // Driving frequency Omega_D_1
-    Omega_D_2 = atof(argv[7]);          // Driving frequency Omega_D_2
-    F_D_1 = atof(argv[8]);              // Driving amplitude F_D_1
-    F_D_2 = atof(argv[9]);             // Driving amplitude F_D_2
-    theta_1 = atof(argv[10]);           // Angle of deflection of pendulum (0_1)
-    theta_2 = atof(argv[11]);           // Angle of deflection of pendulum (0_2)
-    omega_1 = atof(argv[12]);           // Velocity of pendulum (ω_1)
-    omega_2 = atof(argv[13]);           // Velocity of pendulum (ω_2)
+    m_1 = atof(argv[2]);
+    m_2 = atof(argv[3]);
+    L_1 = atof(argv[4]);                // Length of pendulum L_2
+    L_2 = atof(argv[5]);                // Length of pendulum L_1
+    q_1 = atof(argv[6]);                // Damping coefficient q_1
+    q_2 = atof(argv[7]);                // Damping coefficient q_2
+    Omega_D_1 = atof(argv[8]);          // Driving frequency Omega_D_1
+    Omega_D_2 = atof(argv[9]);          // Driving frequency Omega_D_2
+    F_D_1 = atof(argv[10]);              // Driving amplitude F_D_1
+    F_D_2 = atof(argv[11]);             // Driving amplitude F_D_2
+    theta_1 = atof(argv[12]);           // Angle of deflection of pendulum (0_1)
+    theta_2 = atof(argv[13]);           // Angle of deflection of pendulum (0_2)
+    omega_1 = atof(argv[14]);           // Velocity of pendulum (ω_1)
+    omega_2 = atof(argv[15]);           // Velocity of pendulum (ω_2)
 
-    t_max = atof(argv[14]);             // Integration time t_max
-    dt = atof(argv[15]);                // Stepsize
-    accuracy = atof(argv[16]);          // Accuracy of simulation
+    t_max = atof(argv[16]);             // Integration time t_max
+    dt = atof(argv[17]);                // Stepsize
+    accuracy = atof(argv[18]);          // Accuracy of simulation
     
     std::ofstream dataFile("..\\out\\pendulum_double.dat");
 
@@ -130,6 +132,7 @@ int main(int argc, char* argv[]) {
     // STARTING ITERATION: t = 0
     // Returns in radian (0) and radian\s (ω)
     dataFile << t << '\t' << theta_1 << '\t' << omega_1 << '\t' << theta_2 << '\t' << omega_2 << '\t' << dt << '\t' << energy_1() << '\t' << energy_2() << '\t' << 0 << '\n';
+    std::cout << t << '\t' << theta_1 << '\t' << omega_1 << '\t' << theta_2 << '\t' << omega_2 << '\t' << dt << '\t' << energy_1() << '\t' << energy_2() << '\t' << 0 << '\n';
 
     while (t < t_max) {
         if(mode == "runge") {
@@ -163,6 +166,7 @@ int main(int argc, char* argv[]) {
 
         // Returns in radian (0) and radian\s (ω)
         dataFile << t << '\t' << theta_1 << '\t' << omega_1 << '\t' << theta_2 << '\t' << omega_2 << '\t' << error << '\t' << energy_1() << '\t' << energy_2() << '\t' << duration.count() << '\n';
+        std::cout << t << '\t' << theta_1 << '\t' << omega_1 << '\t' << theta_2 << '\t' << omega_2 << '\t' << error << '\t' << energy_1() << '\t' << energy_2() << '\t' << duration.count() << '\n';
     }
 
     std::cout << " Output data to file pendulum_double.dat" << std::endl;
