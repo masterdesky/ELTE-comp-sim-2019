@@ -172,19 +172,12 @@ void adaptiveRKCKStep(cpl::Vector& x, double& tau, double accuracy,
 void EulerStep_double(cpl::Vector& x, cpl::Vector& y, double tau,
                       std::vector<cpl::Vector> derivs(const cpl::Vector&, const cpl::Vector&))
 {   
-    // Time_1
-    x[0] += tau * (derivs(x, y)[0])[0];
-    // Deflection_1
-    x[1] += tau * (derivs(x, y)[0])[1];
-    // Velocity_1
-    x[2] += tau * (derivs(x, y)[0])[2];
+    cpl::Vector x_temp = x;
+    // Time_1, Deflection_1, Velocity_1
+    x += tau * (derivs(x, y)[0]);
 
-    // Time_2
-    y[0] += tau * (derivs(x, y)[1])[0];
-    // Deflection_2
-    y[1] += tau * (derivs(x, y)[1])[1];
-    // Velocity_2
-    y[2] += tau * (derivs(x, y)[1])[2];
+    // Time_2, Deflection_2, Velocity_2
+    y += tau * (derivs(x_temp, y)[1]);
 }
 
 
@@ -192,6 +185,7 @@ void EulerStep_double(cpl::Vector& x, cpl::Vector& y, double tau,
 void EulerCromerStep_double(cpl::Vector& x, cpl::Vector& y, double tau,
                             std::vector<cpl::Vector> derivs(const cpl::Vector&, const cpl::Vector&))
 {
+    cpl::Vector x_temp = x;
     // Time
     x[0] += tau * (derivs(x, y)[0])[0];
     // Velocity
@@ -200,9 +194,9 @@ void EulerCromerStep_double(cpl::Vector& x, cpl::Vector& y, double tau,
     x[1] += tau * x[2];
 
     // Time
-    y[0] += tau * (derivs(x, y)[1])[0];
+    y[0] += tau * (derivs(x_temp, y)[1])[0];
     // Velocity
-    y[2] += tau * (derivs(x, y)[1])[2];
+    y[2] += tau * (derivs(x_temp, y)[1])[2];
     // Deflection
     y[1] += tau * y[2];
 }
@@ -261,6 +255,7 @@ static void rkck_double(cpl::Vector& x, cpl::Vector& y, double tau,
     x_err = dc1*k1[0] + dc2*k2[0] + dc3*k3[0] + dc4*k4[0] + dc5*k5[0] + dc6*k6[0];
     y_err = dc1*k1[1] + dc2*k2[1] + dc3*k3[1] + dc4*k4[1] + dc5*k5[1] + dc6*k6[1];
 }
+
 
 //  Runge-Kutta-Cash-Karp step
 void RKCKStep_double(cpl::Vector& x, cpl::Vector& y, double tau,
