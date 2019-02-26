@@ -111,6 +111,7 @@ int main(int argc, char* argv[]) {
     accuracy = atof(argv[18]);          // Accuracy of simulation
     
     std::ofstream dataFile("..\\out\\pendulum_double.dat");
+    std::ofstream coordinates("..\\out\\pendulum_double_coords.dat");
 
     // Define containers for parameters of motion, and starting positions
     t = 0;
@@ -136,6 +137,9 @@ int main(int argc, char* argv[]) {
     
     std::cout << t << '\t' << theta_1 << '\t' << omega_1 << '\t' << theta_2 << '\t' << omega_2
                 << '\t' << dt << '\t' << energy_1() << '\t' << energy_2() << '\t' << 0 << '\n';
+
+    coordinates << t << '\t' << L_1 * sin(theta_1) << '\t' << - L_1 * cos(theta_1) << '\t'
+                             << L_1 * sin(theta_1) + L_2 * sin(theta_2) << '\t' << - (L_1 * cos(theta_1) + L_2 * cos(theta_2)) << '\n';
 
     while (t < t_iteration) {
         if(mode == "runge") {
@@ -173,6 +177,9 @@ int main(int argc, char* argv[]) {
         
         std::cout << t << '\t' << theta_1 << '\t' << omega_1 << '\t' << theta_2 << '\t' << omega_2
                     << '\t' << error << '\t' << energy_1() << '\t' << energy_2() << '\t' << duration.count() << '\n';
+
+        coordinates << t << '\t' << L_1 * sin(theta_1) << '\t' << - L_1 * cos(theta_1) << '\t'
+                                 << L_1 * sin(theta_1) + L_2 * sin(theta_2) << '\t' << - (L_1 * cos(theta_1) + L_2 * cos(theta_2)) << '\n';
     }
 
     std::cout << " Output data to file pendulum_double.dat" << std::endl;
