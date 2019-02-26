@@ -3,7 +3,6 @@
 #include <cstdlib>
 #include <iostream>
 #include <vector>
-using namespace std;
 
 #include "vector.hpp"
 #include "odeint.hpp"
@@ -13,8 +12,8 @@ namespace cpl {
 // #################### SIMPLE PENDULUM ####################
 
 //  Simple Euler
-void EulerStep(Vector& x, double tau,
-               Vector derivs(const Vector&))
+void EulerStep(cpl::Vector& x, double tau,
+               cpl::Vector derivs(const cpl::Vector&))
 {   
     // Time
     x[0] += tau * derivs(x)[0];
@@ -27,8 +26,8 @@ void EulerStep(Vector& x, double tau,
 }
 
 //  Semi-Implicit, Euler-Cromer
-void EulerCromerStep(Vector& x, double tau,
-                     Vector derivs(const Vector&))
+void EulerCromerStep(cpl::Vector& x, double tau,
+                     cpl::Vector derivs(const cpl::Vector&))
 {
     // Time
     x[0] += tau * derivs(x)[0];
@@ -41,25 +40,27 @@ void EulerCromerStep(Vector& x, double tau,
 }
 
 //  Fourth order Runge-Kutta
-void RK4Step(Vector& x, double tau,
-             Vector derivs(const Vector&))
+void RK4Step(cpl::Vector& x, double tau,
+             cpl::Vector derivs(const cpl::Vector&))
 {
-    Vector k1 = tau * derivs(x);
-    Vector k2 = tau * derivs(x + 0.5 * k1);
-    Vector k3 = tau * derivs(x + 0.5 * k2);
-    Vector k4 = tau * derivs(x + k3);
+    cpl::Vector 
+        k1 = tau * derivs(x),
+        k2 = tau * derivs(x + 0.5 * k1),
+        k3 = tau * derivs(x + 0.5 * k2),
+        k4 = tau * derivs(x + k3);
+
     x += (k1 + 2 * k2 + 2 * k3 + k4) / 6.0;
 }
 
 //  Adaptive step size control using Runge-Kutta and step doubling
-void adaptiveRK4Step(Vector& x, double& tau, double accuracy,
-                     Vector derivs(const Vector&))
+void adaptiveRK4Step(cpl::Vector& x, double& tau, double accuracy,
+                     cpl::Vector derivs(const cpl::Vector&))
 {
     const double SAFETY = 0.9, PGROW = -0.2, PSHRINK = -0.25,
                  ERRCON = 1.89E-4, TINY = 1.0e-30;
     int n = x.dimension();
-    Vector x_half(n), x_full(n), Delta(n);
-    Vector scale = derivs(x);
+    cpl::Vector x_half(n), x_full(n), Delta(n);
+    cpl::Vector scale = derivs(x);
     for (int i = 0; i < n; i++)
         scale[i] = abs(x[i]) + abs(scale[i] * tau) + TINY;
     double err_max;
@@ -76,18 +77,18 @@ void adaptiveRK4Step(Vector& x, double& tau, double accuracy,
         Delta = x_half - x_full;
         err_max = 0;
         for (int i = 0; i < n; i++)
-            err_max = max(err_max, abs(Delta[i]) / scale[i]);
+            err_max = std::max(err_max, abs(Delta[i]) / scale[i]);
         err_max /= accuracy;
         if (err_max <= 1.0)
             break;
         double tau_temp = SAFETY * tau * pow(err_max, PSHRINK);
         if (tau >= 0.0)
-            tau = max(tau_temp, 0.1 * tau);
+            tau = std::max(tau_temp, 0.1 * tau);
         else
-            tau = min(tau_temp, 0.1 * tau);
+            tau = std::min(tau_temp, 0.1 * tau);
         if (abs(tau) == 0.0) {
-            cerr << "adaptiveRK4Step: step size underflow\naborting ..."
-                 << endl;
+            std::cerr << "adaptiveRK4Step: step size underflow\naborting ..."
+                 << std::endl;
             exit(EXIT_FAILURE);
         }
     }
@@ -96,8 +97,8 @@ void adaptiveRK4Step(Vector& x, double& tau, double accuracy,
 }
 
 //  Runge-Kutta-Cash-Karp including error estimate
-static void rkck(Vector& x, double tau,
-                 Vector derivs(const Vector&), Vector& x_err)
+static void rkck(cpl::Vector& x, double tau,
+                 cpl::Vector derivs(const cpl::Vector&), cpl::Vector& x_err)
 {
     const double b21 = 1.0/5.0, b31 = 3.0/40.0, b41 = 3.0/10.0,
         b51 = -11.0/54.0, b61 = 1631.0/55296.0, b32 = 9.0/40.0,
@@ -109,7 +110,7 @@ static void rkck(Vector& x, double tau,
         dc3 = c3 - 18575.0/48384.0, dc4 = c4 - 13525.0/55296.0,
         dc5 = c5 - 277.0/14336.0, dc6 = c6 - 1.0/4.0;
 
-    Vector
+    cpl::Vector
         k1 = tau * derivs(x),
         k2 = tau * derivs(x + b21*k1),
         k3 = tau * derivs(x + b31*k1 + b32*k2),
@@ -121,21 +122,22 @@ static void rkck(Vector& x, double tau,
 }
 
 //  Runge-Kutta-Cash-Karp step
-void RKCKStep(Vector& x, double tau, Vector derivs(const Vector&))
+void RKCKStep(cpl::Vector& x, double tau,
+              cpl::Vector derivs(const cpl::Vector&))
 {
-    Vector x_err(x.dimension());
+    cpl::Vector x_err(x.dimension());
     rkck(x, tau, derivs, x_err);
 }
 
 //  Adaptive step size control using Runge-Kutta-Cash-Karp
-void adaptiveRKCKStep(Vector& x, double& tau, double accuracy,
-                      Vector derivs(const Vector&))
+void adaptiveRKCKStep(cpl::Vector& x, double& tau, double accuracy,
+                      cpl::Vector derivs(const cpl::Vector&))
 {
     const double SAFETY = 0.9, PGROW = -0.2, PSHRINK = -0.25,
                  ERRCON = 1.89E-4, TINY = 1.0e-30;
     int n = x.dimension();
-    Vector x_err(n), x_temp(n);
-    Vector scale = derivs(x);
+    cpl::Vector x_err(n), x_temp(n);
+    cpl::Vector scale = derivs(x);
     for (int i = 0; i < n; i++)
         scale[i] = abs(x[i]) + abs(scale[i] * tau) + TINY;
     double err_max;
@@ -145,18 +147,18 @@ void adaptiveRKCKStep(Vector& x, double& tau, double accuracy,
         rkck(x_temp, tau, derivs, x_err);
         err_max = 0;
         for (int i = 0; i < n; i++)
-            err_max = max(err_max, abs(x_err[i]) / scale[i]);
+            err_max = std::max(err_max, abs(x_err[i]) / scale[i]);
         err_max /= accuracy;
         if (err_max <= 1.0)
             break;
         double tau_temp = SAFETY * tau * pow(err_max, PSHRINK);
         if (tau >= 0.0)
-            tau = max(tau_temp, 0.1 * tau);
+            tau = std::max(tau_temp, 0.1 * tau);
         else
-            tau = min(tau_temp, 0.1 * tau);
+            tau = std::min(tau_temp, 0.1 * tau);
         if (abs(tau) == 0.0) {
-            cerr << "adaptiveRKCKStep: step size underflow\naborting ..."
-                 << endl;
+            std::cerr << "adaptiveRKCKStep: step size underflow\naborting ..."
+                 << std::endl;
             exit(EXIT_FAILURE);
         }
     }
@@ -167,27 +169,28 @@ void adaptiveRKCKStep(Vector& x, double& tau, double accuracy,
 // #################### DOUBLE PENDULUM ####################
 
 //  Simple Euler
-void EulerStep_double(Vector& x, Vector& y, double tau,
-                      std::vector<cpl::Vector> derivs(const Vector&, const Vector&))
+void EulerStep_double(cpl::Vector& x, cpl::Vector& y, double tau,
+                      std::vector<cpl::Vector> derivs(const cpl::Vector&, const cpl::Vector&))
 {   
-    // Time
+    // Time_1
     x[0] += tau * (derivs(x, y)[0])[0];
-    // Deflection
+    // Deflection_1
     x[1] += tau * (derivs(x, y)[0])[1];
-    // Velocity
+    // Velocity_1
     x[2] += tau * (derivs(x, y)[0])[2];
 
-    // Time
+    // Time_2
     y[0] += tau * (derivs(x, y)[1])[0];
-    // Deflection
+    // Deflection_2
     y[1] += tau * (derivs(x, y)[1])[1];
-    // Velocity
+    // Velocity_2
     y[2] += tau * (derivs(x, y)[1])[2];
 }
 
+
 //  Semi-Implicit, Euler-Cromer
-void EulerCromerStep_double(Vector& x, Vector& y, double tau,
-                            std::vector<cpl::Vector> derivs(const Vector&, const Vector&))
+void EulerCromerStep_double(cpl::Vector& x, cpl::Vector& y, double tau,
+                            std::vector<cpl::Vector> derivs(const cpl::Vector&, const cpl::Vector&))
 {
     // Time
     x[0] += tau * (derivs(x, y)[0])[0];
@@ -204,23 +207,25 @@ void EulerCromerStep_double(Vector& x, Vector& y, double tau,
     y[1] += tau * y[2];
 }
 
+
 //  Fourth order Runge-Kutta
-void RK4Step_double(Vector& x, Vector& y, double tau,
-                    std::vector<cpl::Vector> derivs(const Vector&, const Vector&))
+void RK4Step_double(cpl::Vector& x, cpl::Vector& y, double tau,
+                    std::vector<cpl::Vector> derivs(const cpl::Vector&, const cpl::Vector&))
 {
     std::vector<cpl::Vector>
         k1 = {tau * derivs(x, y)[0], tau * derivs(x, y)[1]},
         k2 = {tau * derivs(x + 0.5 * k1[0], y + 0.5 * k1[1])[0], tau * derivs(x + 0.5 * k1[0], y + 0.5 * k1[1])[1]},
         k3 = {tau * derivs(x + 0.5 * k2[0], y + 0.5 * k2[1])[0], tau * derivs(x + 0.5 * k2[0], y + 0.5 * k2[1])[1]},
-        k4 = {tau * derivs(x + k3[0], y + k3[1])[0], tau * derivs(x + k3[0], y + k3[1])[1]};
+        k4 = {tau * derivs(x + k3[0], y + k3[1])[0]            , tau * derivs(x + k3[0], y + k3[1])[1]};
     x += (k1[0] + 2 * k2[0] + 2 * k3[0] + k4[0]) / 6.0;
     y += (k1[1] + 2 * k2[1] + 2 * k3[1] + k4[1]) / 6.0;
 }
 
 
 //  Runge-Kutta-Cash-Karp including error estimate
-static void rkck_double(Vector& x, Vector& y, double tau,
-                 std::vector<cpl::Vector> derivs(const Vector&, const Vector&), Vector& x_err, Vector& y_err)
+static void rkck_double(cpl::Vector& x, cpl::Vector& y, double tau,
+                        std::vector<cpl::Vector> derivs(const cpl::Vector&, const cpl::Vector&),
+                        cpl::Vector& x_err, cpl::Vector& y_err)
 {
     const double b21 = 1.0/5.0, b31 = 3.0/40.0, b41 = 3.0/10.0,
         b51 = -11.0/54.0, b61 = 1631.0/55296.0, b32 = 9.0/40.0,
@@ -237,7 +242,7 @@ static void rkck_double(Vector& x, Vector& y, double tau,
               tau * derivs(x, y)[1]},
 
         k2 = {tau * derivs(x + b21*k1[0], y + b21*k1[1])[0],
-              tau * derivs(x + b21*k1[0], y + b21*k1[1])[0]},
+              tau * derivs(x + b21*k1[0], y + b21*k1[1])[1]},
 
         k3 = {tau * derivs(x + b31*k1[0] + b32*k2[0], y + b31*k1[1] + b32*k2[1])[0],
               tau * derivs(x + b31*k1[0] + b32*k2[0], y + b31*k1[1] + b32*k2[1])[1]},
@@ -258,10 +263,11 @@ static void rkck_double(Vector& x, Vector& y, double tau,
 }
 
 //  Runge-Kutta-Cash-Karp step
-void RKCKStep_double(Vector& x, Vector& y, double tau, std::vector<cpl::Vector> derivs(const Vector&, const Vector&))
+void RKCKStep_double(cpl::Vector& x, cpl::Vector& y, double tau,
+                     std::vector<cpl::Vector> derivs(const cpl::Vector&, const cpl::Vector&))
 {
-    Vector x_err(x.dimension());
-    Vector y_err(y.dimension());
+    cpl::Vector x_err(x.dimension());
+    cpl::Vector y_err(y.dimension());
     rkck_double(x, y, tau, derivs, x_err, y_err);
 }
 
