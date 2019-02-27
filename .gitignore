@@ -3,3 +3,4 @@
 *.vscode
 Makefile
 [Ff]rames*/
+*.dat
