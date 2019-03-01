@@ -1,9 +1,36 @@
 \selectlanguage{english}
 \begin{abstract}
-    \noindent A \emph{Számítógépes szimulációk} laboratórium második alkalmával az egyszerű ingák (matematikai, csillapított, gerjesztett, fizikai) differenciálegyenleteinek numerikus megoldásait vizsgáltuk. Összehasonlítottuk az egyenleteket megoldó negyedrendű Runge--Kutta, a lépéshossz-váltó (adaptív) negyedrendű Runge--Kutta, a Runge--Kutta--Cash--Karp és az adatív Runge--Kutta--Cash--Karp, valamint az Euler és az Euler--Cromer módszereket. Kiegészítésként megvizsgáltuk ezek pontosságát és érzékenységét a kettős ingára vonatkozóan is. \\
+    \noindent A \emph{Számítógépes szimulációk} laboratórium második alkalmával az ingamodellek differenciálegyenleteinek numerikus megoldásait vizsgáltuk különböző közelítésekben (matematikai, csillapított, gerjesztett és fizikai). Összehasonlítottuk az egyenleteket megoldó negyedrendű Runge--Kutta, a lépéshossz-váltó (adaptív) negyedrendű Runge--Kutta, a Runge--Kutta--Cash--Karp és az adatív Runge--Kutta--Cash--Karp, valamint az Euler és az Euler--Cromer módszereket. Kiegészítésként megvizsgáltuk ezek pontosságát és érzékenységét a kettős ingára vonatkozóan is. \\
 \end{abstract}
 \selectlanguage{magyar}
 
 \begin{multicols}{2}
+
+\section{Feladatok} \label{sec:1}
+A laboratórium második feladatában az ingák mozgásegyenleteinek numerikus közelítésével foglalkoztunk. A feladatok magukba foglalták mind az egyszerű matematikai, mind a gerjesztett-csillapított, mind pedig a fizikai ingák egyenleteivel történő munkát is. \\
+A fentiek megoldásához néhány ismert differenciálegyenlet megoldó algoritmust kellett alkalmaznunk, amik eredményeit több szempont alapján is összevetettük egymással. A szóban forgó algoritmusok között a már első feladatból is ismert Euler- és Euler--Cromer-módszer foglalt helyet, valamint újdonságként a negyedrendú Runge-Kutta és a Cash-Karp módszerek is szerepeltek a többi mellett. Az utóbbi kettő módszer esetében egy adaptív lépéshossz-változtató metódus is implementálva volt. Vizsgálataink arra irányultak, hogy az egyenlet megoldó algoritmusok melyik módszer esetében hogyan viselkednek, valamint, hogy azok pontosan mikre érzékenyek. Ehhez monitoroznunk kellett az ingák kitérését, sebességét és kinetikus energiájuk változását az idő függvényében minden módszer esetében. \\
+Kiegészítésként implementálnunk kellett a kettős inga mozgásegyenleteit is, amiket szintén a fenti vizsgálatok alá volt szükséges vetnünk. \\
+Megjegyzendő, hogy minden esetben az olyan mozgásokat vizsgáltuk, ahol minden ingát egy merev rúd rögzít a falhoz, vagy a kettős ingánál esetlegesen a másik ingához.
+
+\section{Elméleti alapok} \label{sec:2}
+A bonyolultabb klasszikus mechanikai rendszerek mozgásegyenletei legegyszerűbben az azokat leíró ún. \emph{Lagrange-függvény} által definiált funkcionálok variációs problémájának megoldásával kaphatóak\cite{gyorgyigeza}. Ez a klasszikus mechanika egyik alapvető formalizmusa, így részletezésébe itt nem megyek bele. Míg az matematikai inga leírásához, annak egyszerűségéből kifolyólag ez a megközelítés értelmetlenül bonyolultabb a naiv felírásnál, addig a kettős ingához már elengedhetetlen eszközzé válik. \\
+A gerjesztett-csillapított matematikai inga mozgásegyenlete célszerűen levezethető - pontos megfogalmazás szerint átalakítható -, ha Newton II. törvényét felírva átváltjuk a benne szereplő mennyiségeket polárkoordinátákba. A kiinduló egyenletünk ekkore az ismert
+
+\begin{equation}
+    \boldsymbol{F} = m \boldsymbol{a}
+\end{equation}
+amit az inga esetében felírhatunk a kitérés szöge és a kötél hosszának függvényében:
+
+\begin{equation}
+    \boldsymbol{F} = -m \boldsymbol{g} * \sin{\left( \theta \right)}
+\end{equation}
+Ezt leosztva $m$-el, megkapjuk a gyorsulást:
+
+\begin{equation}
+    \boldsymbol{a} = -\boldsymbol{g} * \sin{\left( \theta \right)}
+\end{equation}
+
+\section{Megvalósítás} \label{sec:3}
+Előzetesen az egyszerű, gerjesztett-csillapított matematikai inga mozgásegyenletét megoldó keretrendszer volt számunkra megadva, melyet az előre kitűzött feladatok alapján bővítenünk kellett. 
 
 \end{multicols}

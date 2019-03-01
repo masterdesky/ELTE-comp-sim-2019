@@ -1,0 +1,71 @@
+\section*{Appendix A: Mozgásegyenletek}
+
+\subsection*{A.1\ \ A gerjesztett-csillapított kettős inga}
+
+\begin{equation}
+    \ddot{\theta_{1}}
+    =
+    {
+    \frac{m_{2} L_{1} \omega_{1}^{2} * \sin{\left( 2 * d \theta \right)}
+    +
+    2 m_{2} L_{2} \omega_{1}^{2} * \sin{\left( d \theta \right)}
+    +
+    2 g m_{2} * \cos{\left( \theta_{2} \right)} * \sin{\left( d \theta \right)}
+    +
+    2 g m_{1} * \sin{\left( \theta \right)}
+    +
+    \gamma_{1}
+    }{
+    -2 L_{1} * \left( m_1 + m_2 * \sin^{2}{\left( d \theta \right)} \right)
+    }
+    }
+\end{equation}
+
+\begin{equation}
+    \ddot{\theta_{2}}
+    =
+    {
+    \frac{m_{2} L_{2} \omega_{2}^{2} * \sin{\left( 2 * d \theta \right)}
+    +
+    2 * \left( m_{1} + m_{2} \right) * L_{2} \omega_{1}^{2} * \sin{\left( d \theta \right)}
+    +
+    2 g * \left( m_{1} + m_{2} \right) * \cos{\left( \theta_{1} \right)} * \sin{\left( d \theta \right)}
+    +
+    \gamma_{2}
+    }{
+    -2 L_{2} * \left( m_1 + m_2 * \sin^{2}{\left( d \theta \right)} \right)
+    }
+    }
+\end{equation}
+Ahol $m$, $L$, $\theta$ és $\omega$, megfelelő indexekkel ellátott mennyiségek rendre az adott inga tömegét, kötélhosszát, kitérésének szögét, valamint szögsebességét jelölik. Az $1$-es index közvetlenül a felfüggesztéshez, míg a $2$-es az alsó, magához az elsőhöz rögzített ingát jelöli. A $g$ mennyiség a gravitációs gyorsulás. \\
+Többek között még a mozgásegyenletekben szereplő $\gamma_{1}$ és $\gamma_{2}$ mennyiségek az alábbiakat takarják:
+
+\begin{equation}
+    \gamma_{1}
+    =
+    2 \alpha - 2 \beta * \cos{\left( d \theta \right)}
+\end{equation}
+\begin{equation}
+    \gamma_{2}
+    =
+    2 \alpha * \cos{\left( d \theta \right)}
+    -
+    \frac{2 * \left( m_{1} + m_{2} \right)}{m_{2}} \beta
+\end{equation}
+Ahol használtuk az első testre ható
+\begin{equation}
+    \alpha
+    =
+    q_{1} * \omega_{1}
+    -
+    F_{D_{1}} * \sin{\left( \Omega_{D_{1}} * t \right)}
+\end{equation}
+valamint a második testre ható
+\begin{equation}
+    \beta
+    =
+    q_{2} * \omega_{2}
+    -
+    F_{D_{2}} * \sin{\left( \Omega_{D_{2}} * t \right)}
+\end{equation}
+gerjesztő-csillapító hatások jelölését. Ezekben $\Omega_{D}$ és $F_{D}$ - a megfelelő indexekkel - a gerjesztés frekvenciáját és amplitúdóját jelöli, míg az itt és fentebb megjelenő $d \theta = \theta_{1} - \theta_{2}$, a két inga kitérésének különbsége.
