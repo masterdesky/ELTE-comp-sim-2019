@@ -8,12 +8,12 @@
 
 \section{Feladatok} \label{sec:1}
 A laboratórium második feladatában az ingák mozgásegyenleteinek numerikus közelítésével foglalkoztunk. A feladatok magukba foglalták mind az egyszerű matematikai, mind a gerjesztett-csillapított, mind pedig a fizikai ingák egyenleteivel történő munkát is. \\
-A fentiek megoldásához néhány ismert differenciálegyenlet megoldó algoritmust kellett alkalmaznunk, amik eredményeit több szempont alapján is összevetettük egymással. A szóban forgó algoritmusok között a már első feladatból is ismert Euler- és Euler--Cromer-módszer foglalt helyet, valamint újdonságként a negyedrendú Runge-Kutta (innentől RK4) és a Cash-Karp (innentől RKCK) módszerek is szerepeltek a többi mellett. Az utóbbi kettő módszer esetében egy adaptív lépéshossz-változtató metódus is implementálva volt. Vizsgálataink arra irányultak, hogy az egyenlet megoldó algoritmusok melyik módszer esetében hogyan viselkednek, valamint, hogy azok pontosan mikre érzékenyek. Ehhez monitoroznunk kellett az ingák kitérését, sebességét és kinetikus energiájuk változását az idő függvényében minden módszer esetében. \\
+A fentiek megoldásához néhány ismert differenciálegyenlet megoldó algoritmust kellett alkalmaznunk, amik eredményeit több szempont alapján is összevetettük egymással. A szóban forgó algoritmusok között a már első feladatból is ismert Euler- és Euler--Cromer-módszer foglalt helyet, valamint újdonságként a negyedrendű Runge-Kutta (innentől RK4) és a Cash-Karp (innentől RKCK) módszerek is szerepeltek a többi mellett. Az utóbbi kettő módszer esetében egy adaptív lépéshossz-változtató metódus is implementálva volt. Vizsgálataink arra irányultak, hogy az egyenlet megoldó algoritmusok melyik módszer esetében hogyan viselkednek, valamint, hogy azok pontosan mikre érzékenyek. Ehhez monitoroznunk kellett az ingák kitérését, sebességét és kinetikus energiájuk változását minden módszer esetében. \\
 Kiegészítésként implementálnunk kellett a kettős inga mozgásegyenleteit is, amiket szintén a fenti vizsgálatok alá volt szükséges vetnünk. \\
 Megjegyzendő, hogy minden esetben az olyan mozgásokat vizsgáltuk, ahol minden ingát egy merev rúd rögzít a falhoz, vagy a kettős ingánál esetlegesen a másik ingához.
 
 \section{Elméleti alapok} \label{sec:2}
-A bonyolultabb klasszikus mechanikai rendszerek mozgásegyenletei legegyszerűbben az azokat leíró ún. \emph{Lagrange-függvény} által definiált funkcionálok variációs problémájának megoldásával - az adott funkcionál stacionárius pontjainak keresésével - kaphatóak. Ezek a pontok az ún. Euler--Lagrange-egyenlet megoldásával kaphatóak, mely maga a rendszer mozgásegyenlete lesz\cite{gyorgyigeza}. Ez a klasszikus mechanika egyik alapvető formalizmusa, így részletezésébe itt nem megyek bele. Míg az matematikai inga leírásához, annak egyszerűségéből kifolyólag ez a megközelítés értelmetlenül bonyolultabb a naiv felírásnál, addig a kettős ingához már elengedhetetlen eszközzé válik.
+A bonyolultabb klasszikus mechanikai rendszerek mozgásegyenletei legegyszerűbben az azokat leíró ún. \emph{Lagrange-függvény} által definiált funkcionálok variációs problémájának megoldásával - az adott funkcionál stacionárius pontjainak keresésével - kaphatóak. Ezek a pontok az ún. Euler--Lagrange-egyenlet megoldásával kaphatóak, mely maga a rendszer mozgásegyenlete lesz\cite{gyorgyigeza}. Ez a klasszikus mechanika egyik alapvető formalizmusa, így részletezésébe itt nem megyek bele. Míg a matematikai inga leírásához, annak egyszerűségéből kifolyólag ez a megközelítés értelmetlenül bonyolultabb a naiv felírásnál, addig a kettős ingához már elengedhetetlen eszközzé válik.
 
 \subsection{Matematikai inga} \label{sub:2.1}
 A gerjesztett-csillapított matematikai inga mozgásegyenlete célszerűen levezethető - pontos megfogalmazás szerint átalakítható -, ha Newton II. törvényét felírva átváltjuk a benne szereplő mennyiségeket polárkoordinátákba. A kiinduló egyenletünk ekkor az ismert
@@ -55,12 +55,51 @@ Ebből pedig a végleges mozgásegyenlet:
 \begin{equation}
     \boxed{
     \frac{d^{2} \theta}{dt^{2}}
+    \equiv
+    \ddot{\theta}
     =
     - \frac{g}{l} * \sin{\left( \theta \right)}
     }
 \end{equation}
 
-\subsection{Kettős inga} \label{sub:2.2}
+\subsection{Fizikai inga} \label{sub:2.2}
+Tekitsünk egy $M$ tömegű kiterjedt testet, melyen keresztül egy lyuk van fúrva, ezen a lyukon keresztül pedig a test egy olyan felfüggesztéssel van rögzítve, amin szabadon foroghat. Ezt a rendszert nevezzük \emph{fizikai ingának}. Nevezzük el $F$-el a felfüggesztési pontot, $T$-vel pedig a test tömegközéppontját. Egyensúlyi pozícióban, ezen két pont által kijelölt egyenes párhuzamos a gravitációs mező lokális gradiensével. Ha az inga kitérést ehhez az egyeneshez viszonyítjuk, azt mondhatjuk, hogy az inge kitérésének szöge, $\theta = 0$, ha $\overline{FT}\ ||\ \boldsymbol{\nabla} \boldsymbol{\Phi}$, ahol $\Phi$ a mező skalárpotenciálja. \\
+Ilyen feltételek mellett a síkban mozgó fizikai inga mozgásegyenlete felírható az alábbi\cite{physpend} egyszerű módon:
+
+\begin{equation}
+    I_{P} * \ddot{\theta}
+    =
+    \tau_{F}
+\end{equation}
+ahol $\tau_{F}$ az $F$ pontban ható forgatónyomaték, $I_{P}$ pedig az ingatest skalár tehetetlenségi nyomatéka $P$ pontban. Ha a matematikai ingához hasonlóan feltesszük, hogy minden tömege a tömegközéppontjában koncentrálódik, akkor felírhatjuk a forgatónyomatékra az alábbi összefüggést:
+
+\begin{equation}
+    \tau_{F}
+    =
+    - M g d * \sin{\theta}
+\end{equation}
+Ahol $d = \left| \overline{FT} \right|$, tehát a felfüggesztés és a tömegközéppont távolsága. A kapott alakot az előző egyenletünkbe beírva a mozgásegyenlet az alábbi formát veszi fel:
+
+\begin{equation}
+    \ddot{\theta}
+    =
+    - \frac{M g d}{I_{P}} * \sin{\theta}
+\end{equation}
+Figyeljük meg, hogy bevezetve egy ún. \emph{effektív-}, vagy \emph{redukált hosszt}, melyet a következő módon definiálunk:
+
+\begin{equation}
+    l_{eff} = \frac{I_{P}}{M d}
+\end{equation}
+analóg módon visszakapjuk a matematikai inga mozgásegyenletét:
+
+\begin{equation}
+    \ddot{\theta}
+    =
+    - \frac{g}{l_{eff}} * \sin{\theta}
+\end{equation}
+Vagyis a fizikai inga mozgását numerikusan a matematikai ingával azonos módon szimulálhatjuk. A különbség, hogy a fizikai inga esetében az inga redukált hosszával kell számolnunk, amely onnantól teljesen megegyezik egy eltérő kötéhosszal rendelkező matematikai ingával, plusz információt azonban nem szolgáltat.
+
+\subsection{Kettős inga} \label{sub:2.3}
 A kettős inga mozgásegyenletének levezetéséhez fel kell írnunk a rendszer Lagrange-függvényét. Ennek segítségével a mozgásegyenlet kifejezhető a már említett variációs módszer és az Euler--Lagrange-egyenlet kifejtésének segítségével. Ennek levezetése hosszú, így azt és a végleges mozgásegyenleteket az \q{A} függelékben csatolom.
 
 \section{Megvalósítás} \label{sec:3}
@@ -71,8 +110,9 @@ Opcionális lehetőség volt, hogy egy előre megírt \texttt{C++} OpenGL körny
 A végleges forráskód és a programot futtató Notebook file-ok elérhetőek GitHub-on\cite{github}.
 
 \section{Kiértékelés} \label{sec:4}
-\subsection{A matematikai inga mozgása} \label{sub:4.1}
-Az előzetesen megadott kódban szereplő gerjesztett-csillapított ingát több esetre is megvizsgáltam, ezek az alábbiak voltak:
+\subsection{A matematikai és fizikai inga mozgása} \label{sub:4.1}
+Az előzetesen megadott kódban szereplő gerjesztett-csillapított ingát több esetre is megvizsgáltam. Mivel a fizikai inga mozgása - ahogy azt a \ref{sub:4.2}-es fejezetben tárgyaltam - nem tér el a matematikai ingától, ezért a fentiekre hivatkozva a szimulációk során nem tárgyaltam külön őket. Minden esetben az $l = 1\ m$-es effektív hosszal dolgoztam. \\
+A vizsgált szimulációs feltételek a következőek voltak:
 \begin{enumerate}
     \item Gerjesztés és csillapítás nélküli eset
     \item Kizárólag csillapított mozgás
@@ -117,10 +157,10 @@ Ennél a feladatnál már nem csak a szimpla ingánál ismertetett mennyiségeke
 Az ábrák többek között a \ref{sub:4.1}-ben olvasottakhoz hasonlóan helyezkednek el a B.3-as és B.4-es függelékben. A (\ref{fig:52}) - (\ref{fig:59}) ábrák az RK4 és RKCK algoritmusokhoz tartozó kitérés-idő és sebesség-idő diagramok, amiket szintén a szimpla ingához hasonlóan, matematikai, csillapított, gerjesztett és csillapított, valamint csak gerjesztett esetekben vizsgáltam. A (\ref{fig:60}) - (\ref{fig:63}) ugyanezen diagramok összehasonlítása látható. Az egyetlen különbség (\ref{fig:52}) - (\ref{fig:59})-hoz képest, hogy itt egy ábrán vettem fel mind az RKCK, mind pedig az RK4-ből kapott kitérés értékeket az idő függvényében. Habár mindkét szimuláció teljesen azonos kezdőfeltételekkel indult, mégis erőteljes eltérés van a kettő között. Ez annak tudható be, hogy az RKCK és az RK4 algoritmusok nem teljesen azonosak, egymáshoz képest nagyon apró, de mégis eltérő numerikus hibákat produkálnak. Mivel a kettős inga egy kaotikus rendszer, így az apró, de különböző perturbációk is teljesen más és más kimeneteket képesek okozni az egyes esetekben. Pontosan ez látható ezeken az ábrákon is. \\
 A B.4-es függelékben (\ref{fig:64}) - (\ref{fig:87}) értelemszerűen a fenteikhez tartozó fázisdiagramok és energia-sebesség grafikonok találhatóak. \\
 A B.5-ös függelékben a kettős ingák által leírt trajektóriákat ábrázoltam (\ref{fig:88}) - (\ref{fig:95})-ig. Az ingamozgás síkban történik, így ezek ábrázolásához is csupán két koordinátát kellett figyelembe vegyek. Ezek felvételéhez az ingák felfüggesztését vettem egy Descartes-koordinátarendszer origójának, aminek segítségével az ingák kitérése és a rudak hossza alapján megkaptam az adott pillanatnyi pozíciókat. Az ábrákon külön ábrázoltam a két ingát minden esetben. Ez rajtuk egyértelműen jelölve is van. \\
-A B.6-os függelékben az kettős inga kaotikus viselkedését használtam. Erről már az előbb említést tettem, ott azonban a különböző numerikus megoldásokból fakadó eltérésekről beszéltem. A (\ref{fig:96}) - (\ref{fig:103}) képeken azt vizsgáltam, hogy a kezdeti kitérítési szöget a 4-5. tizedesjegyben perturbálva, milyen hatással van ez a további mozgásra. Az ábrákon szépen látszik is az elvárt viselkedés: A legapróbb eltérések is teljesen különböző kimenetet produkálnak. Az ábrázolt 4 db kettős inga mozgása az eleján még együtt mozog, azonban egy pontban ezek hirtelen mind elválnak egymástól. Ez feltehetően egy olyan helyen következik be, ahol az iteratív módszerek viszonylag csak nagy hibával tudják a szimulációt léptetni. (Pl. ahol ott épp megfordul a sebességvektor iránya, így a gyorsulás egy hatalmas értékké nő.)
+A B.6-os függelékben az kettős inga ismerten kaotikus viselkedését\cite{stachowiak_okada_2006} vizsgáltam. Erről már az előbb említést tettem, ott azonban a különböző numerikus megoldásokból fakadó eltérésekről beszéltem. A (\ref{fig:96}) - (\ref{fig:103}) képeken azt vizsgáltam, hogy a kezdeti kitérítési szöget a 4-5. tizedesjegyben perturbálva, milyen hatással van ez a további mozgásra. Az ábrákon szépen látszik is az elvárt viselkedés: A legapróbb eltérések is teljesen különböző kimenetet produkálnak. Az ábrázolt 4 db kettős inga mozgása az elején még együtt mozog, azonban egy pontban ezek hirtelen mind elválnak egymástól. Ez feltehetően egy olyan helyen következik be, ahol az iteratív módszerek viszonylag csak nagy hibával tudják a szimulációt léptetni. (Pl. ahol ott épp megfordul a sebességvektor iránya, így a gyorsulás egy hatalmas értékké nő.)
 
 \subsection{Kettős inga - animáció} \label{sub:4.3}
-A kettős ingához a Python \texttt{matplotlib} és \texttt{imageio} könyvtárainak felhasználásával egy olyan saját programot írtam, ami kimenetként képes animáció (pl. egy \texttt{mp4} kiterjesztésű videó) formájában ábrázolni egy tetszőleges paraméterekkel futtatott szimulációt. Erről több videót is készítettem, különböző bemenő paraméterekkel, amik közül néhány relevánsabbat a YouTube-on elérhetővé tettem, azok ott most is megtekinthetőek\cite{yt}.
+A kettős ingához a Python \texttt{matplotlib} és \texttt{imageio} könyvtárainak felhasználásával egy olyan saját programot írtam, ami kimenetként képes animáció (pl. egy \texttt{mp4} kiterjesztésű videó) formájában ábrázolni egy tetszőleges paraméterekkel futtatott szimulációt. Erről több videót is készítettem, különböző bemenő paraméterekkel, amik közül néhány relevánsabbat és érdekesebbet - amik a kettős inga kaotikus viselkedését jól szemléltetik - a YouTube-on elérhetővé tettem, azok ott most is megtekinthetőek\cite{yt}.
 
 \subsection{Futásidő} \label{sub:4.4}
 A különböző iteratív módszerek futásidejét a matematikai inga esetére teszteltem. Az program futása alatt eltelt időt a \texttt{chrono} library segítségével mértem, milliszekundumos pontosságú időmérési metódust használva. A szimulációt a különöböző módszerekkel $t = 10\ s$ és $t = 120\ s$ közötti időpontokban futtattam a matematikai inga esetére, a fenti táblázatokban is szereplő kezdőfeltételekkel. Az egyes $t$ időkre történő futások között másodperces lépésekkel vettem fel a futásidőket. Ezeket az alábbi grafikonokon ábrázoltam:
@@ -140,12 +180,10 @@ Egyedül az Euler- és az Euler--Cromer-módszer esetén várnánk azonos futás
 \captionof{figure}{Futásidők 3.\\Mat.}
 \hfill \break
 A kettő közti alig észrevehető különbség egyedül abból fakadhat, hogy az Euler--Cromer módszer esetén a biztonság kedvéért egy plusz értékadás műveletet is alkalmaztam, aminek szintén van - minimális, de véges nagyságú - órajeligénye. \\
-Összefoglalóként azt mondhatjuk, hogy az Euler--Cromer-módszer minden esetben pontosabb képet ad az Euler módszernél, viszont futásidőben tökéletesen azonosak. Ellenben ebből a szempontból jobbak is a náluk pontosabb algoritmusoknál. Azt mondhatjuk tehát, hogy megfelelő rendszer szimulációjánál, kellően pontos lépésközt válaszva, érdemes lehet az Euler--Cromer-módszerhez folyamodni, ha a futásidő kulcsfontosságúan számít.
+Összefoglalóként azt mondhatjuk, hogy az Euler--Cromer-módszer minden esetben pontosabb képet ad az Euler módszernél, viszont futásidő szempontjából tökéletesen azonosak. Tovább menve, az Euler--Cromer módszer futásidőben még jobb is a náluk pontosabb algoritmusoknál. Azt mondhatjuk tehát, hogy megfelelő rendszer szimulációjánál, kellően pontos lépésközt válaszva, érdemes lehet az Euler--Cromer-módszerhez folyamodni, ha a futásidő kulcsfontosságú.
 
 \section{Diszkusszió} \label{sec:5}
-A feladatok során összehasonlítottam az ingamozgás példáján keresztül néhány ismert iteratív algoritmust, amik alkalmasak a fizikában előkerülő problémák numerikus közelítésére. Megállapítottam, hogy az Euler-módszer csak nagyon kivételes esetben érdemes alkalmazni, akkor is csak körültekintéssel, megfelelő szimulációs felbontás mellett. A vele megegyezően gyors futásidejű Euler--Cromer-módszer - habár még mindig nem pontosabb, mint a Runge--Kutta függvénycsalád - ellenben jó választásnak számíthat időigényes szimulációk optimalizációjához. \\
-
-
+A feladatok során összehasonlítottam az ingamozgás példáján keresztül néhány ismert iteratív algoritmust, amik alkalmasak a fizikában előkerülő problémák numerikus közelítésére. Megállapítottam, hogy az Euler-módszer csak nagyon kivételes esetben érdemes alkalmazni, akkor is csak körültekintéssel, megfelelő szimulációs felbontás mellett. A vele megegyezően gyors futásidejű Euler--Cromer-módszer - habár még mindig nem pontosabb, mint a Runge--Kutta függvénycsalád - ellenben jó választásnak számíthat időigényes szimulációk optimalizációjához.
 
 \section{Megjegyzések} \label{sec:6}
 A dokumentumban található képek 150 dpi felbontású, \code{.pdf} kiterjesztésű forrásból származnak, amiket a \code{matplotlib} package \code{savefig} függvényének segítségével mentettem le. Ezek miatt a jegyzőkönyv néha lassan tölt be, azonban a már többször említett GitHub repository-ban az könnyebben olvasható. (Ennek az oka feltehetően az, hogy GitHub-on megnyitva az oldal az egész PDF-et betölti, míg egy offline PDF olvasó csak egy adott tartományban levő részeket az optimalizáció miatt.) \\
