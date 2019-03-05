@@ -10,7 +10,7 @@ class Vector;
 
 // ODE integration routines adapted from Numerical Recipes
 
-// #################### SIMPLE PENDULUM ####################
+// #################### SINGLE BODY ####################
 
 //  take a single Euler step
 extern void EulerStep(
@@ -56,7 +56,7 @@ extern void adaptiveRKCKStep(
     Vector derivs(const Vector&)      //  extended derivative vector
 );
 
-// #################### DOUBLE PENDULUM ####################
+// #################### DOUBLE BODY ####################
 
 //  take a single Euler step
 extern void EulerStep_double(

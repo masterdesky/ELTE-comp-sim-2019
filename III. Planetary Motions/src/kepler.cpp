@@ -69,14 +69,18 @@ int main(int argc, char* argv[]) {
     cpl::Vector x0(5);
     x0[0] = 0;  x0[1] = r_ap;  x0[2] = 0;  x0[3] = 0;  x0[4] = v0;
 
+    // Changing variables
+    std::ofstream dataFile;     // Datafile for outputs
+    cpl::Vector x;              // Storing orbit parameters for every step
+    int steps, crossing;        // Stepsize, Interpolate crossing
 
     //
     // FIXED STEP SIZE
     //
     // Fixed step size datafile and variable container 'x'
-    std::ofstream dataFile("..\\out\\fixed.dat");
-    cpl::Vector x = x0;
-    int steps = 0, crossing = 0;
+    dataFile.open("..\\out\\fixed.dat");
+    x = x0;
+    steps = 0, crossing = 0;
 
     // Fixed step size
     std::cout << "\n Integrating with fixed step size" << std::endl;

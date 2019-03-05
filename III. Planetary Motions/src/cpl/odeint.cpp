@@ -9,7 +9,7 @@
 
 namespace cpl {
 
-// #################### SINGLE VARIABLE ####################
+// #################### SINGLE BODY ####################
 
 //  Simple Euler
 void EulerStep(cpl::Vector& x, double tau,
@@ -166,7 +166,7 @@ void adaptiveRKCKStep(cpl::Vector& x, double& tau, double accuracy,
     x = x_temp;
 }
 
-// #################### DOUBLE VARIABLE ####################
+// #################### DOUBLE BODY ####################
 
 //  Simple Euler
 void EulerStep_double(cpl::Vector& x, cpl::Vector& y, double tau,
