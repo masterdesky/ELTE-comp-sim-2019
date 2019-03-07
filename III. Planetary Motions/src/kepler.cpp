@@ -8,6 +8,7 @@
 
 const double pi = 4 * atan(1.0);
 const double GmPlusM = 4 * pi * pi;
+const double M_sun = 1;                 // Normalized mass of Sun
 
 static double r_ap;
 static double eccentricity;
@@ -18,7 +19,14 @@ static double periods;
 static double dt;
 static double accuracy;
 
-bool switch_t_with_y = false;    //  to interpolate to y = 0
+bool switch_t_with_y = false;           //  to interpolate to y = 0
+
+// Calculate potential energy
+
+void potential_energy(const cpl::Vector& x) {
+    return ;
+}
+
 
 //  Derivative vector for Newton's law of gravitation
 cpl::Vector derivates(const cpl::Vector& x) {
@@ -54,35 +62,35 @@ int main(int argc, char* argv[]) {
     std::cout << " Kepler orbit comparing fixed and adaptive Runge-Kutta\n"
               << " -----------------------------------------------------\n";
     
-    r_ap = atof(argv[1]);                       // Aphelion distance in AU
-    eccentricity = atof(argv[2]);               // Eccentricity
-    periods = atof(argv[3]);                    // Number of periods
-    dt = atof(argv[4]);                         // Step size
-    accuracy = atof(argv[5]);                   // Adaptive accuracy of simulation
+    r_ap = atof(argv[1]);                       //  Aphelion distance in AU
+    eccentricity = atof(argv[2]);               //  Eccentricity
+    periods = atof(argv[3]);                    //  Number of periods
+    dt = atof(argv[4]);                         //  Step size
+    accuracy = atof(argv[5]);                   //  Adaptive accuracy of simulation
 
-    a = r_ap / (1 + eccentricity);              // Length of semi-major axis
-    T = pow(a, 1.5);                            // Period T
-    v0 = sqrt(GmPlusM * (2 / r_ap - 1 / a));    // Initial velocity (tangential along y-axis)
+    a = r_ap / (1 + eccentricity);              //  Length of semi-major axis
+    T = pow(a, 1.5);                            //  Period T
+    v0 = sqrt(GmPlusM * (2 / r_ap - 1 / a));    //  Initial velocity (tangential along y-axis)
 
-    // Initial parameters
-    // x0[0]: time; x0[1]: x coordinate; x0[2]: y coordinate; x0[3]: x velocity; x0[4]: y velocity
+    //  Initial parameters
+    //  x0[0]: time; x0[1]: x coordinate; x0[2]: y coordinate; x0[3]: x velocity; x0[4]: y velocity
     cpl::Vector x0(5);
     x0[0] = 0;  x0[1] = r_ap;  x0[2] = 0;  x0[3] = 0;  x0[4] = v0;
 
-    // Changing variables
-    std::ofstream dataFile;     // Datafile for outputs
-    cpl::Vector x;              // Storing orbit parameters for every step
-    int steps, crossing;        // Stepsize, Interpolate crossing
+    //  Changing variables
+    std::ofstream dataFile;     //  Datafile for outputs
+    cpl::Vector x;              //  Storing orbit parameters for every step
+    int steps, crossing;        //  Stepsize, Interpolate crossing
 
     //
-    // FIXED STEP SIZE
+    //  FIXED STEP SIZE
     //
-    // Fixed step size datafile and variable container 'x'
+    //  Fixed step size datafile and variable container 'x'
     dataFile.open("..\\out\\fixed.dat");
     x = x0;
     steps = 0, crossing = 0;
 
-    // Fixed step size
+    //  Fixed step size
     std::cout << "\n Integrating with fixed step size" << std::endl;
     do {
         for(int i = 0; i < 5; i++) {
@@ -103,15 +111,15 @@ int main(int argc, char* argv[]) {
 
 
     //
-    // ADAPTIVE STEP SIZE
+    //  ADAPTIVE STEP SIZE
     //
-    // Adaptive step size datafile and variable container 'x'
+    //  Adaptive step size datafile and variable container 'x'
     dataFile.open("..\\out\\adaptive.dat");
     x = x0;
     steps = crossing = 0;
     double dt_max = 0, dt_min = 100;
 
-    // Adaptive step size
+    //  Adaptive step size
     std::cout << "\n Integrating with adaptive step size" << std::endl;
     do {
         for(int i = 0; i < 5; i++) {
@@ -123,7 +131,7 @@ int main(int argc, char* argv[]) {
         double y = x[2];
         cpl::adaptiveRK4Step(x, dt, accuracy, derivates);
         double step_size = x[0] - t_save;
-        ++steps;
+        steps++;
         if(step_size < dt_min) {
             dt_min = step_size;
         }
