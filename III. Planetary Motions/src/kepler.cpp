@@ -15,7 +15,7 @@ static double eccentricity;
 static double a;
 static double T;
 static double v0;
-static double periods;
+static double plotting_years;
 static double dt;
 static double accuracy;
 
@@ -62,14 +62,14 @@ int main(int argc, char* argv[]) {
     std::cout << " Kepler orbit comparing fixed and adaptive Runge-Kutta\n"
               << " -----------------------------------------------------\n";
     
-    r_ap = atof(argv[1]);                       //  Aphelion distance in AU
-    eccentricity = atof(argv[2]);               //  Eccentricity
-    periods = atof(argv[3]);                    //  Number of periods
-    dt = atof(argv[4]);                         //  Step size
-    accuracy = atof(argv[5]);                   //  Adaptive accuracy of simulation
+    std::string fixed_or_not = argv[1];         //  Fixed or adaptive
+    r_ap = atof(argv[2]);                       //  Aphelion distance in AU
+    eccentricity = atof(argv[3]);               //  Eccentricity
+    plotting_years = atof(argv[4]);             //  Number of calculated years
+    dt = atof(argv[5]);                         //  Step size
+    accuracy = atof(argv[6]);                   //  Adaptive accuracy of simulation
 
     a = r_ap / (1 + eccentricity);              //  Length of semi-major axis
-    T = pow(a, 1.5);                            //  Period T
     v0 = sqrt(GmPlusM * (2 / r_ap - 1 / a));    //  Initial velocity (tangential along y-axis)
 
     //  Initial parameters
@@ -85,66 +85,72 @@ int main(int argc, char* argv[]) {
     //
     //  FIXED STEP SIZE
     //
-    //  Fixed step size datafile and variable container 'x'
-    dataFile.open("..\\out\\fixed.dat");
-    x = x0;
-    steps = 0, crossing = 0;
+    if(fixed_or_not == "fixed") {
+        //  Fixed step size datafile and variable container 'x'
+        dataFile.open("..\\out\\fixed.dat");
+        x = x0;
+        steps = 0, crossing = 0;
 
-    //  Fixed step size
-    std::cout << "\n Integrating with fixed step size" << std::endl;
-    do {
-        for(int i = 0; i < 5; i++) {
-            dataFile << x[i] << '\t';
-        }
-        dataFile << '\n';
-        double y = x[2];
-        cpl::RK4Step(x, dt, derivates);
-        steps++;
-        if(y * x[2] < 0) {
-            interpolate_crossing(x, crossing);
-        }
+        //  Fixed step size
+        std::cout << "\n Integrating with fixed step size" << std::endl;
+        do {
+            for(int i = 0; i < 5; i++) {
+                dataFile << x[i] << '\t';
+            }
+            dataFile << '\n';
+            double y = x[2];
+            cpl::RK4Step(x, dt, derivates);
+            steps++;
+            if(y * x[2] < 0) {
+                interpolate_crossing(x, crossing);
+            }
 
-    } while (x[0] < periods * T);
-    std::cout << " number of fixed size steps = " << steps << std::endl;
-    std::cout << " data in file fixed.dat" << std::endl;
-    dataFile.close();
+        } while (x[0] <= plotting_years);
+
+        std::cout << " number of fixed size steps = " << steps << std::endl;
+        std::cout << " data in file fixed.dat" << std::endl;
+        dataFile.close();
+    }
 
 
     //
     //  ADAPTIVE STEP SIZE
     //
-    //  Adaptive step size datafile and variable container 'x'
-    dataFile.open("..\\out\\adaptive.dat");
-    x = x0;
-    steps = crossing = 0;
-    double dt_max = 0, dt_min = 100;
+    else if(fixed_or_not == "adaptive") {
+        //  Adaptive step size datafile and variable container 'x'
+        dataFile.open("..\\out\\adaptive.dat");
+        x = x0;
+        steps = crossing = 0;
+        double dt_max = 0, dt_min = 100;
 
-    //  Adaptive step size
-    std::cout << "\n Integrating with adaptive step size" << std::endl;
-    do {
-        for(int i = 0; i < 5; i++) {
-            dataFile << x[i] << '\t';
-        }
+        //  Adaptive step size
+        std::cout << "\n Integrating with adaptive step size" << std::endl;
+        do {
+            for(int i = 0; i < 5; i++) {
+                dataFile << x[i] << '\t';
+            }
 
-        dataFile << '\n';
-        double t_save = x[0];
-        double y = x[2];
-        cpl::adaptiveRK4Step(x, dt, accuracy, derivates);
-        double step_size = x[0] - t_save;
-        steps++;
-        if(step_size < dt_min) {
-            dt_min = step_size;
-        }
-        if(step_size > dt_max) {
-            dt_max = step_size;
-        }
-        if(y * x[2] < 0) {
-            interpolate_crossing(x, crossing);
-        }
-    } while (x[0] < periods * T);
-    std::cout << " number of adaptive steps = " << steps << std::endl;
-    std::cout << " step size: min = " << dt_min << "  max = " << dt_max << std::endl;
-    std::cout << " data in file adaptive.dat" << std::endl;
-    dataFile.close();
+            dataFile << '\n';
+            double t_save = x[0];
+            double y = x[2];
+            cpl::adaptiveRK4Step(x, dt, accuracy, derivates);
+            double step_size = x[0] - t_save;
+            steps++;
+            if(step_size < dt_min) {
+                dt_min = step_size;
+            }
+            if(step_size > dt_max) {
+                dt_max = step_size;
+            }
+            if(y * x[2] < 0) {
+                interpolate_crossing(x, crossing);
+            }
+        } while (x[0] <= plotting_years);
+
+        std::cout << " number of adaptive steps = " << steps << std::endl;
+        std::cout << " step size: min = " << dt_min << "  max = " << dt_max << std::endl;
+        std::cout << " data in file adaptive.dat" << std::endl;
+        dataFile.close();
+    }
 }
 
