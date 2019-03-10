@@ -8,7 +8,7 @@
 
 const double pi = 4 * atan(1.0);
 const double GMPlusm = 4 * pi * pi;         // Kepler's Third Law: G(M + m)/(4*pi^2) = 1 [AU^3/day^2]
-const double G = 6.67408 * pow(10, -11);    // Gravitational constant [m^3 * kg^-1 * s^-2]
+const double G = 1.488 * pow(10, -34);    // Gravitational constant [AU^3 * kg^-1 * day^-2]
 const double M_Sun = 1.989 * pow(10, 30);   // Mass of Sun [kg]
 const double c = 173.145;                   // Speed of light [AU/day]
 
@@ -24,7 +24,7 @@ bool switch_t_with_y = false;               // To interpolate to y = 0
 bool relat = false;                         // Enable/disable relativistic corrections
 
 //  Calculate potential energy
-double potential_energy(const cpl::Vector& x) {
+double gravitational_potential(const cpl::Vector& x) {
     return M_Sun * G / (sqrt(pow(x[1], 2) + pow(x[2], 2)));
 }
 
@@ -34,6 +34,8 @@ cpl::Vector derivates(const cpl::Vector& x) {
     double t = x[0], r_x = x[1], r_y = x[2], v_x = x[3], v_y = x[4];
     double rSquared = r_x*r_x + r_y*r_y;
     double rCubed = rSquared * sqrt(rSquared);
+    double gamma_x = 1 - pow(v_x, 2)/pow(c, 2);
+    double gamma_y = 1 - pow(v_y, 2)/pow(c, 2);
     cpl::Vector f(5);
     f[0] = 1;
     f[1] = v_x;
@@ -42,8 +44,8 @@ cpl::Vector derivates(const cpl::Vector& x) {
     f[4] = - GMPlusm * r_y / rCubed;
 
     if(relat) {
-        f[3] /= (1 - pow(v_x, 2)/pow(c, 2));               // Relativistic effects for Keplerian
-        f[4] /= (1 - pow(v_y, 2)/pow(c, 2));               // orbit, due to special relativity
+        f[3] /= gamma_x;               // Relativistic effects for Keplerian
+        f[4] /= gamma_y;               // orbit, due to special relativity
     }
     if(switch_t_with_y) {
         //  use y as independent variable
@@ -110,7 +112,7 @@ int main(int argc, char* argv[]) {
             for(int i = 0; i < 5; i++) {
                 dataFile << x[i] << '\t';
             }
-            dataFile << potential_energy(x) << '\n';
+            dataFile << gravitational_potential(x) << '\n';
             double y = x[2];
             cpl::RK4Step(x, dt, derivates);
             steps++;
@@ -143,7 +145,7 @@ int main(int argc, char* argv[]) {
                 dataFile << x[i] << '\t';
             }
 
-            dataFile << potential_energy(x) << '\n';
+            dataFile << gravitational_potential(x) << '\n';
             double t_save = x[0];
             double y = x[2];
             cpl::adaptiveRK4Step(x, dt, accuracy, derivates);
