@@ -7,19 +7,21 @@
 #include "odeint.hpp"
 
 const double pi = 4 * atan(1.0);
-const double GMPlusm = 4 * pi * pi;         // Kepler's Third Law: G(M + m)/(4*pi^2) = const. [AU^3/day^2]
+const double GMPlusm = 4 * pi * pi;         // Kepler's Third Law: G(M + m)/(4*pi^2) = 1 [AU^3/day^2]
 const double G = 6.67408 * pow(10, -11);    // Gravitational constant [m^3 * kg^-1 * s^-2]
-const double M_Sun = 1;                     // Normalized mass of Sun [M_Sun kg]
+const double M_Sun = 1.989 * pow(10, 30);   // Mass of Sun [kg]
+const double c = 173.145;                   // Speed of light [AU/day]
 
-static double r_ap;                         // Aphelion distance in AU [AU]
+static double r_ap;                         // Aphelion distance [AU]
 static double eccentricity;                 // Eccentricity
 static double a;                            // Length of semi-major axis [AU]
-static double v0;                           // Initial velocity (tangential along y-axis) [AU/]
-static double plotting_years;               // Number of calculated years [Year]
-static double dt;                           // Step size [Year]
+static double v0;                           // Initial velocity (tangential along y-axis) [AU/day]
+static double plotting_years;               // Number of calculated years [year]
+static double dt;                           // Step size [year]
 static double accuracy;                     // Adaptive accuracy of simulation
 
 bool switch_t_with_y = false;               // To interpolate to y = 0
+bool relat = false;                         // Enable/disable relativistic corrections
 
 //  Calculate potential energy
 double potential_energy(const cpl::Vector& x) {
@@ -38,6 +40,11 @@ cpl::Vector derivates(const cpl::Vector& x) {
     f[2] = v_y;
     f[3] = - GMPlusm * r_x / rCubed;
     f[4] = - GMPlusm * r_y / rCubed;
+
+    if(relat) {
+        f[3] /= (1 - pow(v_x, 2)/pow(c, 2));               // Relativistic effects for Keplerian
+        f[4] /= (1 - pow(v_y, 2)/pow(c, 2));               // orbit, due to special relativity
+    }
     if(switch_t_with_y) {
         //  use y as independent variable
         for(int i = 0; i < 5; i++) {
@@ -63,14 +70,19 @@ int main(int argc, char* argv[]) {
               << " -----------------------------------------------------\n";
     
     std::string fixed_or_not = argv[1];         // Fixed or adaptive
-    r_ap = atof(argv[2]);                       // Aphelion distance in AU
-    eccentricity = atof(argv[3]);               // Eccentricity
-    plotting_years = atof(argv[4]);             // Number of calculated years
-    dt = atof(argv[5]);                         // Step size
-    accuracy = atof(argv[6]);                   // Adaptive accuracy of simulation
+    std::string relativity = argv[2];           // Relativistic effects
+    r_ap = atof(argv[3]);                       // Aphelion distance in AU
+    eccentricity = atof(argv[4]);               // Eccentricity
+    plotting_years = atof(argv[5]);             // Number of calculated years
+    dt = atof(argv[6]);                         // Step size
+    accuracy = atof(argv[7]);                   // Adaptive accuracy of simulation
 
     a = r_ap / (1 + eccentricity);              // Length of semi-major axis
-    v0 = sqrt(GMPlusm * (2 / r_ap - 1 / a));    // Initial velocity (tangential along y-axis)
+    v0 = sqrt(GMPlusm * (2 / r_ap - 1 / a));    // Initial velocity (tangential along y-axis) [AU/day]
+
+    if(relativity[0] == 'r') {
+        relat = true;
+    }
 
     //  Initial parameters
     //  x0[0]: time; x0[1]: x coordinate; x0[2]: y coordinate; x0[3]: x velocity; x0[4]: y velocity

@@ -29,12 +29,10 @@ static double omega_1;          // Velocity of pendulum (ω_1)
 static double omega_2;          // Velocity of pendulum (ω_2)
 
 static double t;                // Current time t
-static double t_iteration;            // Integration time t_iteration
+static double t_iteration;      // Integration time t_iteration
 static double dt;               // Stepsize
 static double accuracy;         // Accuracy of simulation
 static double error;            // Error of simulation
-
-
 
 
 double energy_1() {
