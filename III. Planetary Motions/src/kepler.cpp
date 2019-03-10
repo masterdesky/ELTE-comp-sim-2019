@@ -7,15 +7,15 @@
 #include "odeint.hpp"
 
 const double pi = 4 * atan(1.0);
-const double GMPlusm = 4 * pi * pi;         // Kepler's Third Law: G(M + m)/(4*pi^2) = 1 [AU^3/day^2]
-const double G = 1.488 * pow(10, -34);      // Gravitational constant [AU^3 * kg^-1 * day^-2]
+const double GMPlusm = 4 * pi * pi;         // Kepler's Third Law: G(M + m)/(4*pi^2) = 1 [AU^3/year^2]
+const double G = 1.48022 * pow(10, -19);    // Gravitational constant [AU^3 * kg^-1 * year^-2]
 const double M_Sun = 1.989 * pow(10, 30);   // Mass of Sun [kg]
-const double c = 173.145;                   // Speed of light [AU/day]
+const double c = 63197.8;                   // Speed of light [AU/year]
 
 static double r_ap;                         // Aphelion distance [AU]
 static double eccentricity;                 // Eccentricity
 static double a;                            // Length of semi-major axis [AU]
-static double v0;                           // Initial velocity (tangential along y-axis) [AU/day]
+static double v0;                           // Initial velocity (tangential along y-axis) [AU/year]
 
 static double plotting_years;               // Number of calculated years [year]
 static double dt;                           // Step size [year]
@@ -81,7 +81,7 @@ int main(int argc, char* argv[]) {
     accuracy = atof(argv[7]);                   // Adaptive accuracy of simulation
 
     a = r_ap / (1 + eccentricity);              // Length of semi-major axis [AU]
-    v0 = sqrt(GMPlusm * (2 / r_ap - 1 / a));    // Initial velocity (tangential along y-axis) [AU/day]
+    v0 = sqrt(GMPlusm * (2 / r_ap - 1 / a));    // Initial velocity (tangential along y-axis) [AU/year]
 
     if(relativity[0] == 'r') {
         relat = true;

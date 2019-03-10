@@ -7,10 +7,10 @@
 #include "odeint.hpp"
 
 const double pi = 4 * atan(1.0);
-const double GMPlusm = 4 * pi * pi;         // Kepler's Third Law: G(M + m)/(4*pi^2) = 1 [AU^3/day^2]
-const double G = 1.488 * pow(10, -34);      // Gravitational constant [AU^3 * kg^-1 * day^-2]
+const double GMPlusm = 4 * pi * pi;         // Kepler's Third Law: G(M + m)/(4*pi^2) = 1 [AU^3/year^2]
+const double G = 1.48022 * pow(10, -19);    // Gravitational constant [AU^3 * kg^-1 * year^-2]
 const double M_Sun = 1.989 * pow(10, 30);   // Mass of Sun [kg]
-const double c = 173.145;                   // Speed of light [AU/day]
+const double c = 63197.8;                   // Speed of light [AU/year]
 
 static double m_1;                          // Mass of first body [kg]
 static double m_2;                          // Mass of second body [kg]
@@ -21,19 +21,22 @@ static double eccentricity_1;               // Eccentricity of first body
 static double eccentricity_2;               // Eccentricity of second body
 static double a_1;                          // Length of semi-major axis of first body [AU]
 static double a_2;                          // Length of semi-major axis of second body [AU]
-static double v0_1;                         // Initial velocity of first body (tangential along y-axis) [AU/day]
-static double v0_2;                         // Initial velocity of second body (tangential along y-axis) [AU/day]
+static double v0_1;                         // Initial velocity of first body (tangential along y-axis) [AU/year]
+static double v0_2;                         // Initial velocity of second body (tangential along y-axis) [AU/year]
 
 static double plotting_years;               // Number of calculated years [year]
 static double dt;                           // Step size [year]
 static double accuracy;                     // Adaptive accuracy of simulation
 
-bool switch_t_with_y = false;             // To interpolate to y = 0
+bool switch_t_with_y = false;               // To interpolate to y = 0
 bool relat = false;                         // Enable/disable relativistic corrections
 
+
 //  Calculate potential energy
-double gravitational_potential(const cpl::Vector& x, double m) {
-    return m / (m_1 + m_2) * G / (sqrt(pow(x[1], 2) + pow(x[2], 2)));
+auto kinetic_energy(const cpl::Vector& x, double& m) {
+    // Dimension: kg * AU^2 / year^2
+    // Convert to J, by changing AU^2/year^2 to m^2/s^2 (pow at the end)
+    return 1/2 * m * (pow(x[3], 2) + pow(x[4], 2)) * pow(4740.57172, 2);
 }
 
 
@@ -90,12 +93,12 @@ int main(int argc, char* argv[]) {
     dt = atof(argv[9]);                             // Step size [year]
     accuracy = atof(argv[10]);                      // Adaptive accuracy of simulation
 
-    r_ap_1 = r - m_1/(m_1+m_2) * r;
-    r_ap_2 = r - r_ap_1;
+    r_ap_1 = r - m_1/(m_1+m_2) * r;                 // Aphelium distance of first body [AU]
+    r_ap_2 = r - r_ap_1;                            // Aphelium distance of second body [AU]
     a_1 = r_ap_1 / (1 + eccentricity_1);            // Length of semi-major axis of first body [AU]
     a_2 = r_ap_2 / (1 + eccentricity_2);            // Length of semi-major axis of second body [AU]
-    v0_1 = sqrt(GMPlusm * (2 / r_ap_1 - 1 / a_1));  // Initial velocity of first body (tangential along y-axis) [AU/day]
-    v0_2 = sqrt(GMPlusm * (2 / r_ap_2 - 1 / a_2));  // Initial velocity of second body (tangential along y-axis) [AU/day]
+    v0_1 = sqrt(GMPlusm * (2 / r_ap_1 - 1 / a_1));  // Initial velocity of first body (tangential along y-axis) [AU/year]
+    v0_2 = sqrt(GMPlusm * (2 / r_ap_2 - 1 / a_2));  // Initial velocity of second body (tangential along y-axis) [AU/year]
 
     if(relativity[0] == 'r') {
         relat = true;
@@ -133,7 +136,7 @@ int main(int argc, char* argv[]) {
             for(int i = 0; i < 5; i++) {
                 dataFile << x_2[i] << '\t';
             }
-            dataFile << gravitational_potential(x_1, m_1) << '\t' << gravitational_potential(x_2, m_2) << '\n';
+            dataFile << kinetic_energy(x_1, m_1) << '\t' << kinetic_energy(x_2, m_2) << '\n';
             double y_1 = x_1[2];
             double y_2 = x_2[2];
             cpl::RK4Step(x_1, dt, derivates);
@@ -176,7 +179,7 @@ int main(int argc, char* argv[]) {
                 dataFile << x_2[i] << '\t';
             }
 
-            dataFile << gravitational_potential(x_1, m_1) << '\t' << gravitational_potential(x_2, m_2) << '\n';
+            dataFile << kinetic_energy(x_1, m_1) << '\t' << kinetic_energy(x_2, m_2) << '\n';
             double t_save_1 = x_1[0];
             double t_save_2 = x_2[0];
             double y_1 = x_1[2];
