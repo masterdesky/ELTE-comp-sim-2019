@@ -21,6 +21,7 @@ static double plotting_years;               // Number of calculated years [year]
 static double dt;                           // Step size [year]
 static double accuracy;                     // Adaptive accuracy of simulation
 
+std::string odeint;                         // ODE integration method
 bool switch_t_with_y = false;               // To interpolate to y = 0
 bool relat = false;                         // Enable/disable relativistic corrections
 
@@ -33,10 +34,9 @@ double gravitational_potential(const cpl::Vector& x) {
 //  Derivative vector for Newton's law of gravitation
 cpl::Vector derivates(const cpl::Vector& x) {
     double t = x[0], r_x = x[1], r_y = x[2], v_x = x[3], v_y = x[4];
-    double rSquared = pow(r_x, 2) + pow(r_y, 2);
-    double rCubed = pow(rSquared, 3/2);
-    double gamma_x = 1 - pow(v_x, 2)/pow(c, 2);
-    double gamma_y = 1 - pow(v_y, 2)/pow(c, 2);
+    double rSquared = r_x*r_x + r_y*r_y;
+    double rCubed = rSquared * sqrt(rSquared);
+
     cpl::Vector f(5);
     f[0] = 1;
     f[1] = v_x;
@@ -45,6 +45,8 @@ cpl::Vector derivates(const cpl::Vector& x) {
     f[4] = - GMPlusm * r_y / rCubed;
 
     if(relat) {
+        double gamma_x = 1 - pow(v_x, 2)/pow(c, 2);
+        double gamma_y = 1 - pow(v_y, 2)/pow(c, 2);
         f[3] /= gamma_x;               // Relativistic effects for Keplerian
         f[4] /= gamma_y;               // orbit, due to special relativity
     }
@@ -62,7 +64,12 @@ cpl::Vector derivates(const cpl::Vector& x) {
 void interpolate_crossing(cpl::Vector x, int& crossing) {
     crossing++;
     switch_t_with_y = true;
-    cpl::RK4Step(x, -x[2], derivates);
+    if(odeint=="runge") {
+        cpl::RK4Step(x, -x[2], derivates);
+    }
+    else if(odeint=="rkck") {
+        cpl::RKCKStep(x, -x[2], derivates);
+    }
     std::cout << " crossing " << crossing << '\t' << " t = " << x[0] << '\t' << " x = " << x[1] << std::endl;
     switch_t_with_y = false;
 }
@@ -73,12 +80,13 @@ int main(int argc, char* argv[]) {
               << " -----------------------------------------------------\n";
     
     std::string fixed_or_not = argv[1];         // Fixed or adaptive
-    std::string relativity = argv[2];           // Relativistic effects
-    r_ap = atof(argv[3]);                       // Aphelion distance [AU]
-    eccentricity = atof(argv[4]);               // Eccentricity
-    plotting_years = atof(argv[5]);             // Number of calculated years [year]
-    dt = atof(argv[6]);                         // Step size [year]
-    accuracy = atof(argv[7]);                   // Adaptive accuracy of simulation
+    odeint = argv[2];                           // ODE integration method
+    std::string relativity = argv[3];           // Relativistic effects
+    r_ap = atof(argv[4]);                       // Aphelion distance [AU]
+    eccentricity = atof(argv[5]);               // Eccentricity
+    plotting_years = atof(argv[6]);             // Number of calculated years [year]
+    dt = atof(argv[7]);                         // Step size [year]
+    accuracy = atof(argv[8]);                   // Adaptive accuracy of simulation
 
     a = r_ap / (1 + eccentricity);              // Length of semi-major axis [AU]
     v0 = sqrt(GMPlusm * (2 / r_ap - 1 / a));    // Initial velocity (tangential along y-axis) [AU/year]
@@ -113,9 +121,17 @@ int main(int argc, char* argv[]) {
             for(int i = 0; i < 5; i++) {
                 dataFile << x[i] << '\t';
             }
+
             dataFile << gravitational_potential(x) << '\n';
+        
             double y = x[2];
-            cpl::RK4Step(x, dt, derivates);
+            if(odeint=="runge") {
+                cpl::RK4Step(x, dt, derivates);
+            }
+            else if(odeint=="rkck") {
+                cpl::RKCKStep(x, dt, derivates);
+            }
+            
             steps++;
             if(y * x[2] < 0) {
                 interpolate_crossing(x, crossing);
@@ -149,7 +165,13 @@ int main(int argc, char* argv[]) {
             dataFile << gravitational_potential(x) << '\n';
             double t_save = x[0];
             double y = x[2];
-            cpl::adaptiveRK4Step(x, dt, accuracy, derivates);
+            if(odeint=="runge") {
+                cpl::adaptiveRK4Step(x, dt, accuracy, derivates);
+            }
+            else if(odeint=="rkck") {
+                cpl::adaptiveRKCKStep(x, dt, accuracy, derivates);
+            }
+            
             double step_size = x[0] - t_save;
             steps++;
             if(step_size < dt_min) {
