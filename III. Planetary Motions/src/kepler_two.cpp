@@ -8,7 +8,7 @@
 
 const double pi = 4 * atan(1.0);
 const double GMPlusm = 4 * pi * pi;         // Kepler's Third Law: G(M + m)/(4*pi^2) = 1 [AU^3/year^2]
-const double G = 1.48022 * pow(10, -19);    // Gravitational constant [AU^3 * kg^-1 * year^-2]
+const double G = 1.9838 * pow(10, -29);     // Gravitational constant [AU^3 * kg^-1 * year^-2]
 const double M_Sun = 1.989 * pow(10, 30);   // Mass of Sun [kg]
 const double c = 63197.8;                   // Speed of light [AU/year]
 
@@ -33,11 +33,18 @@ bool switch_t_with_y = false;               // To interpolate to y = 0
 bool relat = false;                         // Enable/disable relativistic corrections
 
 
-//  Calculate potential energy
+//  Calculate kinetic energy
 auto kinetic_energy(const cpl::Vector& x, double& m) {
     // Dimension: kg * AU^2 / year^2
     // Convert to J, by changing AU^2/year^2 to m^2/s^2 (pow at the end)
     return 1/2 * m * (pow(x[3], 2) + pow(x[4], 2)) * pow(4740.57172, 2);
+}
+
+//  Calculate potential energy
+double gravitational_potential(const cpl::Vector& x, double& M) {
+    // Dimension: kg * AU^2 / year^2
+    // Convert to J, by changing AU^2/year^2 to m^2/s^2 (pow at the end)
+    return M * G / (sqrt(pow(x[1], 2) + pow(x[2], 2))) * pow(4740.57172, 2);
 }
 
 
@@ -51,14 +58,15 @@ cpl::Vector derivates(const cpl::Vector& x) {
     f[0] = 1;
     f[1] = v_x;
     f[2] = v_y;
-    f[3] = - GMPlusm * r_x / rCubed;
-    f[4] = - GMPlusm * r_y / rCubed;
+    f[3] = - G * (m_1 + m_2) * r_x / rCubed;
+    f[4] = - G * (m_1 + m_2) * r_y / rCubed;
 
+    // Relativistic effects for Keplerian orbit, due to special relativity
     if(relat) {
         double gamma_x = 1 - pow(v_x, 2)/pow(c, 2);
         double gamma_y = 1 - pow(v_y, 2)/pow(c, 2);
-        f[3] /= gamma_x;               // Relativistic effects for Keplerian
-        f[4] /= gamma_y;               // orbit, due to special relativity
+        f[3] /= gamma_x;
+        f[4] /= gamma_y;
     }
     if(switch_t_with_y) {
         //  use y as independent variable

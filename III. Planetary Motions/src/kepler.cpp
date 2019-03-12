@@ -7,11 +7,11 @@
 #include "odeint.hpp"
 
 const double pi = 4 * atan(1.0);
-const double GMPlusm = 4 * pi * pi;         // Kepler's Third Law: G(M + m)/(4*pi^2) = 1 [AU^3/year^2]
-const double G = 1.48022 * pow(10, -19);    // Gravitational constant [AU^3 * kg^-1 * year^-2]
-const double M_Sun = 1.989 * pow(10, 30);   // Mass of Sun [kg]
+const double G = 1.9838 * pow(10, -29);     // Gravitational constant [AU^3 * kg^-1 * year^-2]
 const double c = 63197.8;                   // Speed of light [AU/year]
 
+static double m_1;                          // Mass of the first body [kg]
+static double m_2;                          // Mass of the second body [kg]
 static double r_ap;                         // Aphelion distance [AU]
 static double eccentricity;                 // Eccentricity
 static double a;                            // Length of semi-major axis [AU]
@@ -25,9 +25,18 @@ std::string odeint;                         // ODE integration method
 bool switch_t_with_y = false;               // To interpolate to y = 0
 bool relat = false;                         // Enable/disable relativistic corrections
 
+//  Calculate kinetic energy
+auto kinetic_energy(const cpl::Vector& x, double& m) {
+    // Dimension: kg * AU^2 / year^2
+    // Convert to J, by changing AU^2/year^2 to m^2/s^2 (pow at the end)
+    return 1/2 * m * (pow(x[3], 2) + pow(x[4], 2)) * pow(4740.57172, 2);
+}
+
 //  Calculate potential energy
-double gravitational_potential(const cpl::Vector& x) {
-    return M_Sun * G / (sqrt(pow(x[1], 2) + pow(x[2], 2)));
+double gravitational_potential(const cpl::Vector& x, double& M) {
+    // Dimension: kg * AU^2 / year^2
+    // Convert to J, by changing AU^2/year^2 to m^2/s^2 (pow at the end)
+    return M * G / (sqrt(pow(x[1], 2) + pow(x[2], 2))) * pow(4740.57172, 2);
 }
 
 
@@ -41,14 +50,15 @@ cpl::Vector derivates(const cpl::Vector& x) {
     f[0] = 1;
     f[1] = v_x;
     f[2] = v_y;
-    f[3] = - GMPlusm * r_x / rCubed;
-    f[4] = - GMPlusm * r_y / rCubed;
+    f[3] = - G * (m_1 + m_2) * r_x / rCubed;
+    f[4] = - G * (m_1 + m_2) * r_y / rCubed;
 
+    // Relativistic effects for Keplerian orbit, due to special relativity
     if(relat) {
         double gamma_x = 1 - pow(v_x, 2)/pow(c, 2);
         double gamma_y = 1 - pow(v_y, 2)/pow(c, 2);
-        f[3] /= gamma_x;               // Relativistic effects for Keplerian
-        f[4] /= gamma_y;               // orbit, due to special relativity
+        f[3] /= gamma_x;
+        f[4] /= gamma_y;
     }
     if(switch_t_with_y) {
         //  use y as independent variable
@@ -82,14 +92,16 @@ int main(int argc, char* argv[]) {
     std::string fixed_or_not = argv[1];         // Fixed or adaptive
     odeint = argv[2];                           // ODE integration method
     std::string relativity = argv[3];           // Relativistic effects
-    r_ap = atof(argv[4]);                       // Aphelion distance [AU]
-    eccentricity = atof(argv[5]);               // Eccentricity
-    plotting_years = atof(argv[6]);             // Number of calculated years [year]
-    dt = atof(argv[7]);                         // Step size [year]
-    accuracy = atof(argv[8]);                   // Adaptive accuracy of simulation
+    m_1 = atof(argv[4]);                        // Mass of the first body [kg]
+    m_2 = atof(argv[5]);                        // Mass of the second body [kg]
+    r_ap = atof(argv[6]);                       // Aphelion distance [AU]
+    eccentricity = atof(argv[7]);               // Eccentricity
+    plotting_years = atof(argv[8]);             // Number of calculated years [year]
+    dt = atof(argv[9]);                         // Step size [year]
+    accuracy = atof(argv[10]);                  // Adaptive accuracy of simulation
 
     a = r_ap / (1 + eccentricity);              // Length of semi-major axis [AU]
-    v0 = sqrt(GMPlusm * (2 / r_ap - 1 / a));    // Initial velocity (tangential along y-axis) [AU/year]
+    v0 = sqrt(G * (m_1 + m_2) * (2 / r_ap - 1 / a));    // Initial velocity (tangential along y-axis) [AU/year]
 
     if(relativity[0] == 'r') {
         relat = true;
@@ -122,7 +134,7 @@ int main(int argc, char* argv[]) {
                 dataFile << x[i] << '\t';
             }
 
-            dataFile << gravitational_potential(x) << '\n';
+            dataFile << gravitational_potential(x, m_1) << '\n';
         
             double y = x[2];
             if(odeint=="runge") {
@@ -162,7 +174,7 @@ int main(int argc, char* argv[]) {
                 dataFile << x[i] << '\t';
             }
 
-            dataFile << gravitational_potential(x) << '\n';
+            dataFile << gravitational_potential(x, m_1) << '\n';
             double t_save = x[0];
             double y = x[2];
             if(odeint=="runge") {
