@@ -11,6 +11,8 @@ For the first class of the *Computer Simulations* course, we studied the simple 
 For the second class of the *Computer Simulations* course, we examined the numerical solutions of the differential equations of simple pendulums. We studied various approximations of the subject, like simple gravity pendulum, driven and/or damped pendulum and physical pendulum. We examined in contrast the simple fourth-order Runge-Kutta and stepsize controlled (adaptive) fourth-order Runge-Kutta, the Runge-Kutta-Cash-Karp and adaptive Runge-Kutta-Cash-Karp and the Euler and Euler-Cromer algorithms. Furthermore we also reviewed the same algorithms for the double pendulum.
 
 ## III. Simulation: Planetary Motions
+On the third occasion of the *Computer Simulations* course, numerical methods for simple planetary motion and the Kepler problem were investigated. We have compared the stepsize controlled method - that has been used in the previous simulations - to solve the differential equations of these problems and test, how it behaves under different initial parameters. In addition, we tested the runtime in contrast with the fixed step integration method.  
+We modeled the one-, two-, and three-body problems, as well as examined Mercury's perihelion precession, supplementing the motion equations with relativistic effects. Finally, in the case of the three-body problem, we modeled the movement of the asteroids and meteorites in the Sun-Jupiter system and monitored their equilibrium at the system's Lagrange points.
 
 ## IV. Simulation: Molecular Dynamics
 
