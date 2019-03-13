@@ -9,7 +9,6 @@
 const double pi = 4 * atan(1.0);
 const double GMPlusm = 4 * pi * pi;         // Kepler's Third Law: G(M + m)/(4*pi^2) = 1 [AU^3/year^2]
 const double G = 1.9838 * pow(10, -29);     // Gravitational constant [AU^3 * kg^-1 * year^-2]
-const double M_Sun = 1.989 * pow(10, 30);   // Mass of Sun [kg]
 const double c = 63197.8;                   // Speed of light [AU/year]
 
 static double m_1;                          // Mass of first body [kg]
@@ -58,8 +57,8 @@ cpl::Vector derivates(const cpl::Vector& x) {
     f[0] = 1;
     f[1] = v_x;
     f[2] = v_y;
-    f[3] = - G * (m_1 + m_2) * r_x / rCubed;
-    f[4] = - G * (m_1 + m_2) * r_y / rCubed;
+    f[3] = - GMPlusm * r_x / rCubed;
+    f[4] = - GMPlusm * r_y / rCubed;
 
     // Relativistic effects for Keplerian orbit, due to special relativity
     if(relat) {
@@ -155,8 +154,15 @@ int main(int argc, char* argv[]) {
             dataFile << kinetic_energy(x_1, m_1) << '\t' << kinetic_energy(x_2, m_2) << '\n';
             double y_1 = x_1[2];
             double y_2 = x_2[2];
-            cpl::RK4Step(x_1, dt, derivates);
-            cpl::RK4Step(x_2, dt, derivates);
+            if(odeint=="runge") {
+                cpl::RK4Step(x_1, dt, derivates);
+                cpl::RK4Step(x_2, dt, derivates);
+            }
+            else if(odeint=="rkck") {
+                cpl::RKCKStep(x_1, dt, derivates);
+                cpl::RKCKStep(x_2, dt, derivates);
+
+            }
             steps++;
             if(y_1 * x_1[2] < 0) {
                 interpolate_crossing(x_1, crossing);
