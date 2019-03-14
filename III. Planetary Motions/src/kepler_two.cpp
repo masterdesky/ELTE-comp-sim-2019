@@ -57,8 +57,8 @@ cpl::Vector derivates(const cpl::Vector& x) {
     f[0] = 1;
     f[1] = v_x;
     f[2] = v_y;
-    f[3] = - GMPlusm * r_x / rCubed;
-    f[4] = - GMPlusm * r_y / rCubed;
+    f[3] = - G * (m_1 + m_2) * r_x / rCubed;
+    f[4] = - G * (m_1 + m_2) * r_y / rCubed;
 
     // Relativistic effects for Keplerian orbit, due to special relativity
     if(relat) {
@@ -112,8 +112,8 @@ int main(int argc, char* argv[]) {
     r_ap_2 = r - r_ap_1;                            // Aphelium distance of second body [AU]
     a_1 = r_ap_1 / (1 + eccentricity_1);            // Length of semi-major axis of first body [AU]
     a_2 = r_ap_2 / (1 + eccentricity_2);            // Length of semi-major axis of second body [AU]
-    v0_1 = sqrt(GMPlusm * (2 / r_ap_1 - 1 / a_1));  // Initial velocity of first body (tangential along y-axis) [AU/year]
-    v0_2 = sqrt(GMPlusm * (2 / r_ap_2 - 1 / a_2));  // Initial velocity of second body (tangential along y-axis) [AU/year]
+    v0_1 = sqrt((G * m_2) * (2 / r_ap_1 - 1 / a_1));  // Initial velocity of first body (tangential along y-axis) [AU/year]
+    v0_2 = sqrt((G * m_1) * (2 / r_ap_2 - 1 / a_2));  // Initial velocity of second body (tangential along y-axis) [AU/year]
 
     if(relativity[0] == 'r') {
         relat = true;
