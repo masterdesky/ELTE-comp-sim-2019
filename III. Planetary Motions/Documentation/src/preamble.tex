@@ -1,0 +1,58 @@
+\usepackage[utf8]{inputenc}
+\usepackage[english,magyar]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath}
+\usepackage{cancel}
+
+% Code snippets
+\usepackage{minted}
+\def\code#1{\texttt{#1}}
+
+% Colour
+\usepackage{color}
+\usepackage[dvipsnames]{xcolor}
+
+% Quotes
+\usepackage[autostyle=false]{csquotes}
+\newcommand{\q}[1]{„#1''} % Redefine quotations
+
+% Tables
+\usepackage{makecell}
+
+% Required for inserting image files
+\usepackage{graphicx}
+\usepackage[skip=2pt, font=scriptsize, justification=centering]{caption}
+\graphicspath{{./images/}}
+\usepackage{wrapfig}
+
+% Section titles
+\usepackage{titlesec}
+\titleformat{\section}{\centering\bfseries\normalsize}{\thesection. }{0em}{\MakeUppercase}
+\titleformat{\subsection}{\centering\bfseries\small}{\thesubsection. }{0em}{\MakeUppercase}
+
+% Hyperlinks
+\usepackage[unicode]{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,      
+    urlcolor=cyan,
+    citecolor = cyan,
+    pdftitle={Planetary Motions - PB},
+    pdfpagemode=FullScreen,
+}
+
+% \cdot instead of asterisk (*) symbol
+\mathcode`\*="8000
+{\catcode`\*\active\gdef*{\cdot}}
+
+% Double underline
+\def\doubleunderline#1{\underline{\underline{#1}}}
+
+% Two columns
+\usepackage{multicol}
+\setlength\columnsep{30pt}
+
+% Biblography
+\usepackage[defernumbers=true,backend=biber,sorting=none]{biblatex}
+\addbibresource{bibliography.bib}

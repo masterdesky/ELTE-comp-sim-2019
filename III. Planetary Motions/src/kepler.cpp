@@ -20,6 +20,7 @@ static double v0;                           // Initial velocity (tangential alon
 static double plotting_years;               // Number of calculated years [year]
 static double dt;                           // Step size [year]
 static double accuracy;                     // Adaptive accuracy of simulation
+static double step_size;                    // Current adaptive stepsize
 
 std::string odeint;                         // ODE integration method
 bool switch_t_with_y = false;               // To interpolate to y = 0
@@ -55,8 +56,8 @@ cpl::Vector derivates(const cpl::Vector& x) {
 
     // Relativistic effects for Keplerian orbit, due to special relativity
     if(relat) {
-        double gamma_x = 1 - pow(v_x, 2)/pow(c, 2);
-        double gamma_y = 1 - pow(v_y, 2)/pow(c, 2);
+        double gamma_x = sqrt(1 - pow(v_x, 2)/pow(c, 2));
+        double gamma_y = sqrt(1 - pow(v_y, 2)/pow(c, 2));
         f[3] /= gamma_x;
         f[4] /= gamma_y;
     }
@@ -174,7 +175,7 @@ int main(int argc, char* argv[]) {
                 dataFile << x[i] << '\t';
             }
 
-            dataFile << gravitational_potential(x, m_1) << '\n';
+            dataFile << gravitational_potential(x, m_1) << '\t' << step_size << '\n';
             double t_save = x[0];
             double y = x[2];
             if(odeint=="runge") {
@@ -184,7 +185,7 @@ int main(int argc, char* argv[]) {
                 cpl::adaptiveRKCKStep(x, dt, accuracy, derivates);
             }
             
-            double step_size = x[0] - t_save;
+            step_size = x[0] - t_save;
             steps++;
             if(step_size < dt_min) {
                 dt_min = step_size;

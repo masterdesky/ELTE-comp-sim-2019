@@ -1,0 +1,132 @@
+\selectlanguage{english}
+\begin{abstract}
+    \noindent A \emph{Számítógépes szimulációk} laboratórium harmadik alkalmával az egyszerű bolygómozgással és a Kepler-problémával kapcsolatos numerikus módszereket vizsgáltuk. Összehasonlítottuk, hogy az eddigi szimulációkban is már használt adaptív lépéshosszváltó módszer milyen körülmények mellett alkalmas az említett problémák differenciálegyenleteinek megoldására és hogy viselkedik különböző kezdőparaméterek hatására. Emellett megvizsgáltuk futásidejét is a fix lépéshosszal integráló módszerrel kontrasztba állítva. \\
+    Modelleztük az egy-, a két- és háromtest-problémát, valamint megvizsgáltuk a Merkúr perihélium-precesszióját, kiegészítve a mozgásegyenleteket relativisztikus effektusokkal is. Végül a háromtest-probléma esetén modelleztük a Nap-Jupiter rendszerben található aszteroidák és meteorrajok mozgását és a Lagrange-pontokban kialakuló egyensúlyát.
+\end{abstract}
+\selectlanguage{magyar}
+
+\begin{multicols}{2}
+
+\section{Feladatok} \label{sec:1}
+A kurzus harmadik alkalmával a bolygómozgás témáját jártuk részletesen körül, vizsgálva annak mind a kepleri, mind pedig az einsteini, relativisztikus hatásokkal kibővített modelljét is.\\
+Előzetesen az egytest probléma kepleri mozgásegyenletét megoldani képes keretrendszer volt számunkra megadva. Ezt felhasználva kellett első lépésben ellenőrizzük, hogy a szimuláció mennyire stabil a numerikus hibákra, tehát az integrálási módszer, a lépésköz és az adaptív pontosság megválasztására. Én ezt vizsgálandó, a Nap-Merkúr rendszer keringését vizsgáltam, azon belül is pontosan a Merkúr ellipszispályájának potenciális elfordulását. Triviálisan azt várnánk, hogy a gravitációs kölcsönhatás klasszikus leírását alkalmazva, egy periódus megtétele után ugyanabba a pontba érkezik vissza egy bolygó keringése során. Ezzel szemben a relativisztikus tárgyalás esetén az égitestek mozgása erős gravitációs térben másabb, így pl. a Merkúr nagytengelye időben elfordul nem záródik. A Merkúr esetében ez a modern adatok ismeretében $100$ év ($\approx 415$ periódus) alatt $\approx 43"$-es precessziót jelent (Magnan, 2007\cite{2007arXiv0712.3709M}; Biesel, 2008\cite{biesel2008precession}) az eredeti állapothoz képest. Ennek alakulását vizsgálva megfelelő számú, különböző esetre, kellően informatív képet kaphatunk az előforduló numerikus hibákról. \\
+A második feladatban az adaptív lépéshosszváltó módszerek összehasonlítását végeztük el, amiket azok adaptív pontosságuk különféle értékeire kellett vizsgálunk. A kérdés az volt, hogy a megkövetelt pontosság hogy befolyásolja a szimuláció során a lépéshossz változását? Szintén a lépéshossz precizitásával kapcsolatos kérdés az integrálási módszerek futásideje közti különbség. Az adaptív pontosságot és a fix lépéshosszakat azonosra választva össze kellett hasonlítanunk az egyes iteratív módszerek futásidejét. \\
+
+
+\section{Elméleti alapok} \label{sec:2}
+\subsection{Kepleri/newtoni modell} \label{sub:2.1}
+Kepler a bolygómozgásra vonatkozó törvényeit Tycho Brahe és a saját, pusztán megfigyelésekből származó adataira alapozta. Ezeknek a törvényeknek jóval később Newton adta meg a részletesen levezetett matematikai és fizikai hátterét. \\
+Az már Kepler számára is ismert volt, hogy a Naprendszer bolygói nem tökéletes kör-, hanem nagyon kis excenricitású ellipszispályán keringenek a Nap körül. Első törvénye kimondja, hogy a bolygók keringési pályája egy olyan ellipszis, melynek egyik gyújtópontjában a Nap áll. Egy égitest távolsága a keringési középponttól tehát minden esetben megadható a következő képlettel:
+\begin{equation}
+    r
+    =
+    \frac{p}{1 + e \cos{\varphi}}
+\end{equation}
+Kepler második törvénye értelmében a bolygók vezérsugara (tehát a bolygót a Nappal összekötő szakasz) azonos idők alatt azonos területeket súrol, tehát
+
+\begin{equation}
+    \frac{d}{dt} \left( \frac{1}{2} r^{2} \dot{\varphi} \right)
+    =
+    const.
+\end{equation}
+Harmadik törvénye alapján a bolygópályák félnagytengelyeinek köbei úgy aránylanak egymáshoz, mint keringési periódusidejük négyzetei. Kepler megfigyelései alapján azt vette észre, hogy az arány mindig konstans:
+
+\begin{equation}
+    \frac{a^{3}}{T^{2}}
+    \approx
+    7.496 * 10^{-6}\ \frac{\text{CsE}^{3}}{\text{nap}^{2}}
+    =
+    1\ \frac{\text{CsE}^{3}}{\text{év}^{2}}
+\end{equation}
+Az utóbbiról Newton gravitációs elméletének segítségével egyszerűen megmagyarázhatjuk a látottakat. Felismerve, hogy a gravitációs erő ebben a centrális mozgásban a centripetális erő szerepét tölti be, felírhatjuk az egyensúly feltételét körmozgásra:
+
+\begin{equation}
+    m r \omega^{2}
+    =
+    \frac{GMm}{r^{2}}
+\end{equation}
+Amiben $M$ a központi égitest (jelen esetben a Nap), míg $m$ a körülötte keringő égitest tömege. Az $\omega$ szögsebességet kifejezhetjük a periódusidővel, $\omega = \frac{2 \pi}{T}$, amit visszahelyettesítve a következő alakot kapjuk $T$-re:
+
+\begin{equation}
+    \cancel{m} r \left( \frac{2 \pi}{T} \right)^{2}
+    =
+    \frac{GM \cancel{m}}{r^{2}}
+    \quad \to \quad
+    T^{2}
+    =
+    \left( \frac{4 \pi^{2}}{GM} \right) * r^{3}
+\end{equation}
+Tehát ténylegesen igaz a feltevés, hogy
+
+\begin{equation}
+    T^{2} \propto r^{3}
+\end{equation}
+Ezt módosítva azzal, hogy elliptikus pályákat feltételezünk ($a \to r$, $GMm \to G \left( M + m \right)$), felírhatjuk a fentebb is ismertetett arány:
+
+\begin{equation}
+    \frac{a^{3}}{T^{2}}
+    =
+    \frac{G \left( M + m \right)}{4 \pi^{2}}
+    =
+    7.496 * 10^{-6}\ \frac{\text{CsE}^{3}}{\text{nap}^{2}}
+    =
+    1\ \frac{\text{CsE}^{3}}{\text{év}^{2}}
+\end{equation}
+
+
+\subsection{Relativisztikus modell} \label{sub:2.2}
+Egy lehetséges és egyszerű megközelítése a kepleri bolygómozgás relativisztikus bővítésének, egy olyan Lagrange-függvény bevezetése, ami a speciális relativitáselméletben is megjelenő
+
+\begin{equation}
+    \gamma
+    =
+    \frac{1}{\sqrt{1 - \tfrac{v^{2}}{c^{2}}}}
+\end{equation}
+Lorentz-faktort és a newtoni gravitációs elméletből ismert
+
+\begin{equation}
+    V \left( r \right)
+    =
+    \frac{GMm}{r}
+\end{equation}
+gravitációs potenciált is tartalmazza, konzisztens módon (Lemmon et al., 2010\cite{2010arXiv1012.5438L}). Ez a megközelítés ismert és alkalmazott. A relativisztikus rendszer mozgásegyenlete felírható a következő általános módon, általános koordinátákat használva:
+
+\begin{equation}
+    \sum_{n=1}^{3} \left[ \frac{d}{dt} \left( \frac{\partial L}{\partial \dot{q}_{i}} \right) - \frac{\partial L}{\partial q_{i}} \right] q_{i}
+    =
+    0
+\end{equation}
+Ami a $q_{i}$ koordináták függetlenek, így a mozgásegyenlet a következő formára egyszerűsödik:
+\begin{equation}
+    \frac{d}{dt} \left( \frac{\partial L}{\partial \dot{q}_{i}} \right) - \frac{\partial L}{\partial q_{i}}
+    =
+    0
+\end{equation}
+Melyben szereplő $L$, az említett, relativisztikus korrekciókkal ellátott Lagrange-függvény (Potgieter, 1983\cite{doi:10.1119/1.13441}):
+
+\begin{equation}
+    L
+    =
+    - mc^{2} \gamma^{-1} + V(r)
+\end{equation}
+Melyben $V \left( r \right)$ helyére a newtoni gravitációs potenciált írjuk. Így a Lagrange-függvény végleges alakja:
+
+\begin{equation}
+    L
+    =
+    - mc^{2} \gamma^{-1} + \frac{GMm}{r}
+\end{equation}
+Természetesen, hogy valóban relativisztikus korrekciókkal tudjuk ellátni a rendszert és megoldani a mozgásegyenletét, szükségünk van ennek a potenciálnak is a relativisztikus formájára is. A teljes Lagrange-függvényt, tehát egyszerre a kinetikus energiát és potenciális energiát is ilyen korrekciókkal ellátni egy aktívan kutatott téma (Singh, 2015\cite{2015CaJPh..93..549S}; Vayenas, 2015\cite{vayenas2015gravitational}; Kurucz, 2006\cite{kurucz2006precession}), leírása nem egyszerű. Emiatt ahhoz a trükkhöz folyamodunk, hogy a relativisztikus gravitációs potenciál felírása helyett egyből felhasználjuk a relativisztikus gravitációs erő ismert formáját. Definíciója szerint ez ekvivalens a newtoni gravitációs erővel, azonban benne $m$ tömeg $m \gamma$ korrekcióval szerepel. A gravitációs erő alakja a következő lesz ez alapján:
+
+\begin{equation}
+    F_{g} = - \frac{GMm}{r^{2}} \gamma
+\end{equation}
+Mely abból az ismert összefüggésből fakad, miszerint egy konzervatív erőtérben mozgó testre ható erő kifejezhető a potenciál negatív gradiensével:
+
+\begin{equation}
+    \boldsymbol{F} = - \boldsymbol{\nabla} V \left( r \right)
+\end{equation}
+
+\subsection{Többtest-probléma}
+
+\end{multicols}
