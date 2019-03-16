@@ -11,27 +11,28 @@
 A kurzus harmadik alkalmával a bolygómozgás témáját jártuk részletesen körül, vizsgálva annak mind a kepleri, mind pedig az einsteini, relativisztikus hatásokkal kibővített modelljét is.\\
 Előzetesen az egytest probléma kepleri mozgásegyenletét megoldani képes keretrendszer volt számunkra megadva. Ezt felhasználva kellett első lépésben ellenőrizzük, hogy a szimuláció mennyire stabil a numerikus hibákra, tehát az integrálási módszer, a lépésköz és az adaptív pontosság megválasztására. Én ezt vizsgálandó, a Nap-Merkúr rendszer keringését vizsgáltam, azon belül is pontosan a Merkúr ellipszispályájának potenciális elfordulását. Triviálisan azt várnánk, hogy a gravitációs kölcsönhatás klasszikus leírását alkalmazva, egy periódus megtétele után ugyanabba a pontba érkezik vissza egy bolygó keringése során. Ezzel szemben a relativisztikus tárgyalás esetén az égitestek mozgása erős gravitációs térben másabb, így pl. a Merkúr nagytengelye időben elfordul nem záródik. A Merkúr esetében ez a modern adatok ismeretében $100$ év ($\approx 415$ periódus) alatt $\approx 43"$-es precessziót jelent (Magnan, 2007\cite{2007arXiv0712.3709M}; Biesel, 2008\cite{biesel2008precession}) az eredeti állapothoz képest. Ennek alakulását vizsgálva megfelelő számú, különböző esetre, kellően informatív képet kaphatunk az előforduló numerikus hibákról. \\
 A második feladatban az adaptív lépéshosszváltó módszerek összehasonlítását végeztük el, amiket azok adaptív pontosságuk különféle értékeire kellett vizsgálunk. A kérdés az volt, hogy a megkövetelt pontosság hogy befolyásolja a szimuláció során a lépéshossz változását? Szintén a lépéshossz precizitásával kapcsolatos kérdés az integrálási módszerek futásideje közti különbség. Az adaptív pontosságot és a fix lépéshosszakat azonosra választva össze kellett hasonlítanunk az egyes iteratív módszerek futásidejét. \\
-
+Következő feladatként a már fentebb is említett jelenséget, a Merkúr perihélium-elfordulását kellett vizsgálnunk, egy bizonyos relativisztikus korrekcióval kibővítve a mozgásegyenletünket. \\
+Utolsó feladatunk a többtest-probléma megvalósítása és vizsgálata volt. A kiírás alapján az eredeti kódot úgy kellett modosítanunk, hogy az a háromtest-problémát is képes legyen kezelni. Ezután ennek segítségével meg kellet vizsgálnunk a Nap-Jupiter rendszer Lagrange-pontjainak stabilitását, melyekbe az elmélet alapján egy behelyezett és magára hagyott tömegpont a két másik keringő testhez képest mozdulatlan marad. A Naprendszerben emiatt ezekben a pontokban összegyűlnek kisbolygók és aszteroidák: az L5 pontban a Trójai-csoport helyezkedik el, az L4-ben a Görög-csoport, míg az L3-ban a Hilda-csoport névre keresztelt aszteroida halmaz.
 
 \section{Elméleti alapok} \label{sec:2}
 \subsection{Kepleri/newtoni modell} \label{sub:2.1}
-Kepler a bolygómozgásra vonatkozó törvényeit Tycho Brahe és a saját, pusztán megfigyelésekből származó adataira alapozta. Ezeknek a törvényeknek jóval később Newton adta meg a részletesen levezetett matematikai és fizikai hátterét. \\
+Johannes Kepler a bolygómozgásra vonatkozó törvényeit Tycho Brahe és a saját, pusztán megfigyelésekből származó adataira alapozta. Ezeknek a törvényeknek picivel később Newton adta meg a részletesen levezetett matematikai és fizikai hátterét. \\
 Az már Kepler számára is ismert volt, hogy a Naprendszer bolygói nem tökéletes kör-, hanem nagyon kis excenricitású ellipszispályán keringenek a Nap körül. Első törvénye kimondja, hogy a bolygók keringési pályája egy olyan ellipszis, melynek egyik gyújtópontjában a Nap áll. Egy égitest távolsága a keringési középponttól tehát minden esetben megadható a következő képlettel:
-\begin{equation}
+\begin{equation} \label{eq:1}
     r
     =
     \frac{p}{1 + e \cos{\varphi}}
 \end{equation}
 Kepler második törvénye értelmében a bolygók vezérsugara (tehát a bolygót a Nappal összekötő szakasz) azonos idők alatt azonos területeket súrol, tehát
 
-\begin{equation}
+\begin{equation} \label{eq:2}
     \frac{d}{dt} \left( \frac{1}{2} r^{2} \dot{\varphi} \right)
     =
     const.
 \end{equation}
 Harmadik törvénye alapján a bolygópályák félnagytengelyeinek köbei úgy aránylanak egymáshoz, mint keringési periódusidejük négyzetei. Kepler megfigyelései alapján azt vette észre, hogy az arány mindig konstans:
 
-\begin{equation}
+\begin{equation} \label{eq:3}
     \frac{a^{3}}{T^{2}}
     \approx
     7.496 * 10^{-6}\ \frac{\text{CsE}^{3}}{\text{nap}^{2}}
@@ -40,14 +41,14 @@ Harmadik törvénye alapján a bolygópályák félnagytengelyeinek köbei úgy 
 \end{equation}
 Az utóbbiról Newton gravitációs elméletének segítségével egyszerűen megmagyarázhatjuk a látottakat. Felismerve, hogy a gravitációs erő ebben a centrális mozgásban a centripetális erő szerepét tölti be, felírhatjuk az egyensúly feltételét körmozgásra:
 
-\begin{equation}
+\begin{equation} \label{eq:4}
     m r \omega^{2}
     =
     \frac{GMm}{r^{2}}
 \end{equation}
-Amiben $M$ a központi égitest (jelen esetben a Nap), míg $m$ a körülötte keringő égitest tömege. Az $\omega$ szögsebességet kifejezhetjük a periódusidővel, $\omega = \frac{2 \pi}{T}$, amit visszahelyettesítve a következő alakot kapjuk $T$-re:
+Amiben $M$ a központi égitest (jelen esetben a Nap), míg $m$ a körülötte keringő égitest tömege. $G$ a gravitációs állandó, $r$ pedig a két test tömegközéppontjának távolsága. Az $\omega$ szögsebességet kifejezhetjük a periódusidővel, $\omega = \frac{2 \pi}{T}$, amit visszahelyettesítve a következő alakot kapjuk $T$-re:
 
-\begin{equation}
+\begin{equation} \label{eq:5}
     \cancel{m} r \left( \frac{2 \pi}{T} \right)^{2}
     =
     \frac{GM \cancel{m}}{r^{2}}
@@ -58,12 +59,12 @@ Amiben $M$ a központi égitest (jelen esetben a Nap), míg $m$ a körülötte k
 \end{equation}
 Tehát ténylegesen igaz a feltevés, hogy
 
-\begin{equation}
+\begin{equation} \label{eq:6}
     T^{2} \propto r^{3}
 \end{equation}
 Ezt módosítva azzal, hogy elliptikus pályákat feltételezünk ($a \to r$, $GMm \to G \left( M + m \right)$), felírhatjuk a fentebb is ismertetett arány:
 
-\begin{equation}
+\begin{equation} \label{eq:7}
     \frac{a^{3}}{T^{2}}
     =
     \frac{G \left( M + m \right)}{4 \pi^{2}}
@@ -77,26 +78,26 @@ Ezt módosítva azzal, hogy elliptikus pályákat feltételezünk ($a \to r$, $G
 \subsection{Relativisztikus modell} \label{sub:2.2}
 Egy lehetséges és egyszerű megközelítése a kepleri bolygómozgás relativisztikus bővítésének, egy olyan Lagrange-függvény bevezetése, ami a speciális relativitáselméletben is megjelenő
 
-\begin{equation}
+\begin{equation} \label{eq:8}
     \gamma
     =
     \frac{1}{\sqrt{1 - \tfrac{v^{2}}{c^{2}}}}
 \end{equation}
 Lorentz-faktort és a newtoni gravitációs elméletből ismert
 
-\begin{equation}
+\begin{equation} \label{eq:9}
     V \left( r \right)
     =
     \frac{GMm}{r}
 \end{equation}
-gravitációs potenciált is tartalmazza, konzisztens módon (Lemmon et al., 2010\cite{2010arXiv1012.5438L}). Ez a megközelítés ismert és alkalmazott. A relativisztikus rendszer mozgásegyenlete felírható a következő általános módon, általános koordinátákat használva:
+gravitációs potenciált is tartalmazza, konzisztens módon (Lemmon \emph{et al.}, 2010\cite{2010arXiv1012.5438L}). Ez a megközelítés ismert és alkalmazott. Egy relativisztikus rendszer mozgásegyenlete, melyben $\boldsymbol{r} = \left( t, q_{1}, q_{1}, q_{1} \right)$, felírható a következő módon, általános koordinátákat használva:
 
-\begin{equation}
+\begin{equation} \label{eq:10}
     \sum_{n=1}^{3} \left[ \frac{d}{dt} \left( \frac{\partial L}{\partial \dot{q}_{i}} \right) - \frac{\partial L}{\partial q_{i}} \right] q_{i}
     =
     0
-\end{equation}
-Ami a $q_{i}$ koordináták függetlenek, így a mozgásegyenlet a következő formára egyszerűsödik:
+\end{equation} \label{eq:11}
+Amiben $q_{i}$ koordináták független bázist alkotnak és így a mozgásegyenlet a következő formára (név szerint az Euler--Lagrange-egyenletre) egyszerűsödik:
 \begin{equation}
     \frac{d}{dt} \left( \frac{\partial L}{\partial \dot{q}_{i}} \right) - \frac{\partial L}{\partial q_{i}}
     =
@@ -104,29 +105,117 @@ Ami a $q_{i}$ koordináták függetlenek, így a mozgásegyenlet a következő f
 \end{equation}
 Melyben szereplő $L$, az említett, relativisztikus korrekciókkal ellátott Lagrange-függvény (Potgieter, 1983\cite{doi:10.1119/1.13441}):
 
-\begin{equation}
+\begin{equation} \label{eq:12}
     L
     =
     - mc^{2} \gamma^{-1} + V(r)
 \end{equation}
-Melyben $V \left( r \right)$ helyére a newtoni gravitációs potenciált írjuk. Így a Lagrange-függvény végleges alakja:
+Amiben $V \left( r \right)$ helyére a newtoni gravitációs potenciált írjuk. Így a Lagrange-függvény végleges alakja:
 
-\begin{equation}
+\begin{equation} \label{eq:13}
     L
     =
     - mc^{2} \gamma^{-1} + \frac{GMm}{r}
 \end{equation}
-Természetesen, hogy valóban relativisztikus korrekciókkal tudjuk ellátni a rendszert és megoldani a mozgásegyenletét, szükségünk van ennek a potenciálnak is a relativisztikus formájára is. A teljes Lagrange-függvényt, tehát egyszerre a kinetikus energiát és potenciális energiát is ilyen korrekciókkal ellátni egy aktívan kutatott téma (Singh, 2015\cite{2015CaJPh..93..549S}; Vayenas, 2015\cite{vayenas2015gravitational}; Kurucz, 2006\cite{kurucz2006precession}), leírása nem egyszerű. Emiatt ahhoz a trükkhöz folyamodunk, hogy a relativisztikus gravitációs potenciál felírása helyett egyből felhasználjuk a relativisztikus gravitációs erő ismert formáját. Definíciója szerint ez ekvivalens a newtoni gravitációs erővel, azonban benne $m$ tömeg $m \gamma$ korrekcióval szerepel. A gravitációs erő alakja a következő lesz ez alapján:
+Természetesen, hogy valóban relativisztikus korrekciókkal tudjuk ellátni a rendszert és megoldani a mozgásegyenletét, szükségünk van ennek a potenciálnak is a relativisztikus formájára is. A teljes Lagrange-függvényt, tehát egyszerre a kinetikus energiát és potenciális energiát is ilyen korrekciókkal ellátni egy aktívan kutatott téma (Singh \emph{et al.}, 2015\cite{2015CaJPh..93..549S}; Vayenas \emph{et al.}, 2015\cite{vayenas2015gravitational}; Kurucz, 2006\cite{kurucz2006precession}), leírása nem egyszerű. Emiatt ahhoz a trükkhöz folyamodunk, hogy a relativisztikus gravitációs potenciál felírása helyett egyből felhasználjuk a relativisztikus gravitációs erő ismert formáját. Definíciója szerint ez ekvivalens a newtoni gravitációs erővel, azonban benne $m$ tömeg $m \gamma$ korrekcióval szerepel (Lemmon \emph{et al.}, 2010\cite{2010arXiv1012.5438L}). A gravitációs erő alakja a következő lesz ez alapján:
 
-\begin{equation}
-    F_{g} = - \frac{GMm}{r^{2}} \gamma
+\begin{equation} \label{eq:14}
+    \boldsymbol{F_{g}} = - \gamma \frac{GMm}{r^{2}} \frac{\boldsymbol{r}}{\left| r \right|} 
 \end{equation}
-Mely abból az ismert összefüggésből fakad, miszerint egy konzervatív erőtérben mozgó testre ható erő kifejezhető a potenciál negatív gradiensével:
+Melyben maga a newtoni rész abból az ismert összefüggésből fakad, miszerint egy konzervatív erőtérben mozgó testre ható erő kifejezhető a potenciál negatív gradiensével:
 
-\begin{equation}
-    \boldsymbol{F} = - \boldsymbol{\nabla} V \left( r \right)
+\begin{equation} \label{eq:15}
+    \boldsymbol{F}
+    =
+    - \boldsymbol{\nabla} V \left( r \right)
+\end{equation}
+Így tehát:
+
+\begin{equation} \label{eq:16}
+    \boldsymbol{F_{g_{N}}}
+    =
+    - \boldsymbol{\nabla} \frac{GMm}{r}
+    =
+    - \frac{GMm}{r^{2}} * \frac{\boldsymbol{r}}{\left| r \right|}
+\end{equation}
+\begin{equation} \label{eq:17}
+    \boldsymbol{F_{g_{Rel}}}
+    =
+    - \gamma \frac{GMm}{r^{2}} \frac{\boldsymbol{r}}{\left| r \right|} 
 \end{equation}
 
 \subsection{Többtest-probléma}
+A többtest-probléma a fizika számtalan területén megjelenő, analitikusan csak néhány speciális esetben megoldható probléma. Motivációja a jelenlegi szimuláció által is körüljárt témakörből, az égitestek mozgásának vizsgálatából származik. A konkrét csillagászati kérdés, hogy több, egymással gravitációsan kölcsönható test mozgását hogyan tudjuk előrejelezni? Míg a kéttest-probléma könnyen megoldható és visszavezethető az egytest-problémára, addig a háromtest-probléma már csak néhány, az ennél több testet tartalmazó rendszerek pedig már semmilyen esetben nem oldhatóak meg analitikusan. \\
+Itt a két- és háromtest-probléma vizsgálatát végeztem el, melyek közül az első mozgásegyenleteit tömegközépponti, míg a másodikat relatív koordináta rendszerben írtam fel.
+\\ \\
+A kéttest-probléma mozágegyenleteit előbb írjuk fel egymáshoz képesti, relatív viszonyítási rendszerben, majd váltsuk azt át tömegközéppontira:
+
+\begin{equation} \label{eq:18}
+    \boldsymbol{\ddot{R}_{1}}
+    =
+    - \frac{G m_{2}}{r^{2}} * \frac{\boldsymbol{r}}{\left| r \right|}
+\end{equation}
+
+\begin{equation} \label{eq:19}
+    \boldsymbol{\ddot{R}_{2}}
+    =
+    - \frac{G m_{1}}{r^{2}} * \frac{\boldsymbol{r}}{\left| r \right|}
+\end{equation}
+Ahol jelölje $r$ az két test távolságát, $\boldsymbol{R_{1}}$ és $\boldsymbol{R_{2}}$ a keringési középpont (ez a tömegközéppont (TKP)) felé mutató vektort. Ekkor $\boldsymbol{r} = \boldsymbol{R_{1}} - \boldsymbol{R_{2}}$. Ennek a TKP-nak a pozíciója kiszámítható egyszerűen a testek tömegéből és azok távolságából:
+
+\begin{equation} \label{eq:20}
+    \boldsymbol{R_{1}}
+    =
+    \frac{m_{2}}{m_{1} + m_{2}} * \boldsymbol{r}
+\end{equation}
+
+\begin{equation} \label{eq:21}
+    \boldsymbol{R_{2}}
+    =
+    - \frac{m_{1}}{m_{1} + m_{2}} * \boldsymbol{r}
+\end{equation}
+Ahol $m_{1}$ és $m_{2}$ az egyes testek tömegét jelöli, a fenti távolságoknak megfelelő indexekkel. Az (\ref{eq:19}) és (\ref{eq:20})-as egyenleteket felhasználva és behelyettesítve a (\ref{eq:18})-as mozgásegyenletekbe, könnyen megkaphatjuk azok tömegközépponti rendszerben felírt alakját:
+
+\begin{equation} \label{eq:22}
+    \boldsymbol{\ddot{R}_{1}}
+    =
+    - G \frac{m_{2}^{3}}{\left( m_{1} + m_{2} \right)^{2}} * \frac{\boldsymbol{R_{1}}}{\left| R_{1} \right|^{3}} 
+\end{equation}
+
+\begin{equation} \label{eq:23}
+    \boldsymbol{\ddot{R}_{2}}
+    =
+    - G \frac{m_{1}^{3}}{\left( m_{1} + m_{2} \right)^{2}} * \frac{\boldsymbol{R_{2}}}{\left| R_{2} \right|^{3}}
+\end{equation}
+\\ \\
+A háromtest-probléma hasonló levezetést igényel, azonban egyszerűen az n-test-probléma ismert, általános képletét fogjuk felhasználni, érthetően három test esetére. Ez az általános formula a következőképp fest:
+
+\begin{equation}
+    \boldsymbol{\ddot{r}_{i}}
+    =
+    - G \sum_{j = 1;\ j \neq i}^{N} \frac{m_{j} \left( \boldsymbol{r_{i}} - \boldsymbol{r_{j}} \right)}{\left| \boldsymbol{r_{i}} - \boldsymbol{r_{j}} \right|^{3}}
+\end{equation}
+Aminek segítségével a háromtest-probléma mozgásegyenletei azonnal megfogalmazhatók:
+
+\begin{equation}
+    \boldsymbol{\ddot{r}_{1}}
+    =
+    - G m_{2} \frac{\boldsymbol{r_{1}} - \boldsymbol{r_{2}}}{\left| \boldsymbol{r_{1}} - \boldsymbol{r_{2}} \right|^{3}}
+    - G m_{3} \frac{\boldsymbol{r_{1}} - \boldsymbol{r_{3}}}{\left| \boldsymbol{r_{1}} - \boldsymbol{r_{3}} \right|^{3}}
+\end{equation}
+\begin{equation}
+    \boldsymbol{\ddot{r}_{2}}
+    =
+    - G m_{1} \frac{\boldsymbol{r_{2}} - \boldsymbol{r_{1}}}{\left| \boldsymbol{r_{2}} - \boldsymbol{r_{1}} \right|^{3}}
+    - G m_{3} \frac{\boldsymbol{r_{2}} - \boldsymbol{r_{3}}}{\left| \boldsymbol{r_{2}} - \boldsymbol{r_{3}} \right|^{3}}
+\end{equation}
+\begin{equation}
+    \boldsymbol{\ddot{r}_{3}}
+    =
+    - G m_{1} \frac{\boldsymbol{r_{3}} - \boldsymbol{r_{1}}}{\left| \boldsymbol{r_{3}} - \boldsymbol{r_{1}} \right|^{3}}
+    - G m_{2} \frac{\boldsymbol{r_{3}} - \boldsymbol{r_{2}}}{\left| \boldsymbol{r_{3}} - \boldsymbol{r_{2}} \right|^{3}}
+\end{equation}
+
+\section{Megvalósítás}
 
 \end{multicols}
