@@ -105,13 +105,13 @@ int main(int argc, char* argv[]) {
     m_2 = atof(argv[5]);                            // Mass of second body [kg]
     r = atof(argv[6]);                              // Distance of the two bodies' aphelions [AU]
     eccentricity_1 = atof(argv[7]);                 // Eccentricity of first body
-    eccentricity_1 = atof(argv[8]);                 // Eccentricity of second body
+    eccentricity_2 = atof(argv[8]);                 // Eccentricity of second body
     plotting_years = atof(argv[9]);                 // Number of calculated years [year]
     dt = atof(argv[10]);                            // Step size [year]
     accuracy = atof(argv[11]);                      // Adaptive accuracy of simulation
 
     r_ap_1 = m_2/(m_1+m_2) * r;                     // Aphelium distance of first body [AU]
-    r_ap_2 = r - r_ap_1;                            // Aphelium distance of second body [AU]
+    r_ap_2 = m_1/(m_1+m_2) * r;                     // Aphelium distance of second body [AU]
     a_1 = r_ap_1 / (1 + eccentricity_1);            // Length of semi-major axis of first body [AU]
     a_2 = r_ap_2 / (1 + eccentricity_2);            // Length of semi-major axis of second body [AU]
     v0_1 = sqrt((G * pow(m_2, 3)/pow((m_1 + m_2), 2)) * (2 / r_ap_1 - 1 / a_1));     // Initial velocity of first body (tangential along y-axis) [AU/year]
@@ -124,8 +124,8 @@ int main(int argc, char* argv[]) {
     //  Initial parameters
     //  x0_x[0]: time; x0_x[1]: x coordinate; x0_x[2]: y coordinate; x0_x[3]: x velocity; x0_x[4]: y velocity
     cpl::Vector x0_1(5), x0_2(5);
-    x0_1[0] = 0;  x0_1[1] = r_ap_1;  x0_1[2] = 0;  x0_1[3] = 0;  x0_1[4] = v0_1;
-    x0_2[0] = 0;  x0_2[1] = -r_ap_2;  x0_2[2] = 0;  x0_2[3] = 0;  x0_2[4] = -v0_2;
+    x0_1[0] = 0;  x0_1[1] = -r_ap_1;  x0_1[2] = 0;  x0_1[3] = 0;  x0_1[4] = v0_1;
+    x0_2[0] = 0;  x0_2[1] = r_ap_2;  x0_2[2] = 0;  x0_2[3] = 0;  x0_2[4] = -v0_2;
 
     //  Changing variables
     std::ofstream dataFile;         // Datafile for outputs
@@ -180,9 +180,11 @@ int main(int argc, char* argv[]) {
             }
             steps++;
             if(y_1 * x_1[2] < 0) {
+                m = m_2;
                 interpolate_crossing(x_1, crossing);
             }
             if(y_2 * x_2[2] < 0) {
+                m = m_1;
                 interpolate_crossing(x_2, crossing);
             }
 
@@ -262,9 +264,11 @@ int main(int argc, char* argv[]) {
             }
 
             if(y_1 * x_1[2] < 0) {
+                m = m_2;
                 interpolate_crossing(x_1, crossing);
             }
             if(y_2 * x_2[2] < 0) {
+                m = m_1;
                 interpolate_crossing(x_2, crossing);
             }
         } while (x_1[0] < plotting_years);

@@ -157,6 +157,7 @@ int main(int argc, char* argv[]) {
             
             steps++;
             if(y * x[2] < 0) {
+                m = m_2;
                 interpolate_crossing(x, crossing);
             }
 
@@ -213,6 +214,7 @@ int main(int argc, char* argv[]) {
                 dt_max = step_size;
             }
             if(y * x[2] < 0) {
+                m = m_2;
                 interpolate_crossing(x, crossing);
             }
         } while (x[0] < plotting_years);
