@@ -2,6 +2,7 @@
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
+#include <chrono>
 
 #include "vector.hpp"
 #include "odeint.hpp"
@@ -12,6 +13,7 @@ const double c = 63197.8;                   // Speed of light [AU/year]
 
 static double m_1;                          // Mass of the first body [kg]
 static double m_2;                          // Mass of the second body [kg]
+static double m;                            // Current orbiting mass for second derivate calculations [kg]
 static double r_ap;                         // Aphelion distance [AU]
 static double eccentricity;                 // Eccentricity
 static double a;                            // Length of semi-major axis [AU]
@@ -51,8 +53,8 @@ cpl::Vector derivates(const cpl::Vector& x) {
     f[0] = 1;
     f[1] = v_x;
     f[2] = v_y;
-    f[3] = - G * (m_1 + m_2) * r_x / rCubed;
-    f[4] = - G * (m_1 + m_2) * r_y / rCubed;
+    f[3] = - G * m_2 * (m_1 + m_2)/m * r_x / rCubed;
+    f[4] = - G * m_2 * (m_1 + m_2)/m * r_y / rCubed;
 
     // Relativistic effects for Keplerian orbit, due to special relativity
     if(relat) {
@@ -118,11 +120,14 @@ int main(int argc, char* argv[]) {
     cpl::Vector x;              // Storing orbit parameters for every step
     int steps, crossing;        // Stepsize, Interpolate crossing
 
-
     //
     //  FIXED STEP SIZE
     //
     if(fixed_or_not == "fixed") {
+        // Time measurement init and starts
+        auto start = std::chrono::steady_clock::now();
+        std::chrono::microseconds duration;
+        
         //  Fixed step size datafile and variable container 'x'
         dataFile.open("..\\out\\fixed.dat");
         x = x0;
@@ -131,17 +136,22 @@ int main(int argc, char* argv[]) {
         //  Fixed step size
         std::cout << "\n Integrating with fixed step size" << std::endl;
         do {
+            // Runtime test
+            duration = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - start);
+
             for(int i = 0; i < 5; i++) {
                 dataFile << x[i] << '\t';
             }
 
-            dataFile << gravitational_potential(x, m_1) << '\n';
+            dataFile << gravitational_potential(x, m_1) << '\t' << duration.count() << '\n';
         
             double y = x[2];
             if(odeint=="runge") {
+                m = m_2;
                 cpl::RK4Step(x, dt, derivates);
             }
             else if(odeint=="rkck") {
+                m = m_2;
                 cpl::RKCKStep(x, dt, derivates);
             }
             
@@ -162,6 +172,10 @@ int main(int argc, char* argv[]) {
     //  ADAPTIVE STEP SIZE
     //
     else if(fixed_or_not == "adaptive") {
+        // Time measurement init and starts
+        auto start = std::chrono::steady_clock::now();
+        std::chrono::microseconds duration;
+        
         //  Adaptive step size datafile and variable container 'x'
         dataFile.open("..\\out\\adaptive.dat");
         x = x0;
@@ -171,17 +185,22 @@ int main(int argc, char* argv[]) {
         //  Adaptive step size
         std::cout << "\n Integrating with adaptive step size" << std::endl;
         do {
+            // Runtime test
+            duration = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - start);
+
             for(int i = 0; i < 5; i++) {
                 dataFile << x[i] << '\t';
             }
 
-            dataFile << gravitational_potential(x, m_1) << '\t' << step_size << '\n';
+            dataFile << gravitational_potential(x, m_1) << '\t' << step_size << '\t' << duration.count() << '\n';
             double t_save = x[0];
             double y = x[2];
             if(odeint=="runge") {
+                m = m_2;
                 cpl::adaptiveRK4Step(x, dt, accuracy, derivates);
             }
             else if(odeint=="rkck") {
+                m = m_2;
                 cpl::adaptiveRKCKStep(x, dt, accuracy, derivates);
             }
             

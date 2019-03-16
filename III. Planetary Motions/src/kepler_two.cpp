@@ -2,6 +2,7 @@
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
+#include <chrono>
 
 #include "vector.hpp"
 #include "odeint.hpp"
@@ -13,6 +14,7 @@ const double c = 63197.8;                   // Speed of light [AU/year]
 
 static double m_1;                          // Mass of first body [kg]
 static double m_2;                          // Mass of second body [kg]
+static double m;                            // Current orbiting mass for second derivate calculations [kg]
 static double r;                            // Distance of the two bodies' aphelions [AU]
 static double r_ap_1;                       // Aphelion distance of first body [AU]
 static double r_ap_2;                       // Aphelion distance of second body [AU]
@@ -57,13 +59,13 @@ cpl::Vector derivates(const cpl::Vector& x) {
     f[0] = 1;
     f[1] = v_x;
     f[2] = v_y;
-    f[3] = - G * (m_1 + m_2) * r_x / rCubed;
-    f[4] = - G * (m_1 + m_2) * r_y / rCubed;
+    f[3] = - G * pow(m, 3)/pow((m_1 + m_2), 2) * r_x / rCubed;
+    f[4] = - G * pow(m, 3)/pow((m_1 + m_2), 2) * r_y / rCubed;
 
     // Relativistic effects for Keplerian orbit, due to special relativity
     if(relat) {
-        double gamma_x = 1 - pow(v_x, 2)/pow(c, 2);
-        double gamma_y = 1 - pow(v_y, 2)/pow(c, 2);
+        double gamma_x = sqrt(1 - pow(v_x, 2)/pow(c, 2));
+        double gamma_y = sqrt(1 - pow(v_y, 2)/pow(c, 2));
         f[3] /= gamma_x;
         f[4] /= gamma_y;
     }
@@ -112,8 +114,8 @@ int main(int argc, char* argv[]) {
     r_ap_2 = r - r_ap_1;                            // Aphelium distance of second body [AU]
     a_1 = r_ap_1 / (1 + eccentricity_1);            // Length of semi-major axis of first body [AU]
     a_2 = r_ap_2 / (1 + eccentricity_2);            // Length of semi-major axis of second body [AU]
-    v0_1 = sqrt((G * m_2) * (2 / r_ap_1 - 1 / a_1));  // Initial velocity of first body (tangential along y-axis) [AU/year]
-    v0_2 = sqrt((G * m_1) * (2 / r_ap_2 - 1 / a_2));  // Initial velocity of second body (tangential along y-axis) [AU/year]
+    v0_1 = sqrt((G * pow(m_2, 3)/pow((m_1 + m_2), 2)) * (2 / r_ap_1 - 1 / a_1));     // Initial velocity of first body (tangential along y-axis) [AU/year]
+    v0_2 = sqrt((G * pow(m_1, 3)/pow((m_1 + m_2), 2)) * (2 / r_ap_2 - 1 / a_2));     // Initial velocity of second body (tangential along y-axis) [AU/year]
 
     if(relativity[0] == 'r') {
         relat = true;
@@ -136,6 +138,10 @@ int main(int argc, char* argv[]) {
     //  FIXED STEP SIZE
     //
     if(fixed_or_not == "fixed") {
+        // Time measurement init and starts
+        auto start = std::chrono::steady_clock::now();
+        std::chrono::microseconds duration;
+
         //  Fixed step size datafile and variable container 'x'
         dataFile.open("..\\out\\fixed.dat");
         x_1 = x0_1;
@@ -145,21 +151,30 @@ int main(int argc, char* argv[]) {
         //  Fixed step size
         std::cout << "\n Integrating with fixed step size" << std::endl;
         do {
+            // Runtime test
+            duration = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - start);
+
             for(int i = 0; i < 5; i++) {
                 dataFile << x_1[i] << '\t';
             }
             for(int i = 0; i < 5; i++) {
                 dataFile << x_2[i] << '\t';
             }
-            dataFile << kinetic_energy(x_1, m_1) << '\t' << kinetic_energy(x_2, m_2) << '\n';
+            dataFile << kinetic_energy(x_1, m_1) << '\t' << kinetic_energy(x_2, m_2) << '\t' << duration.count() << '\n';
             double y_1 = x_1[2];
             double y_2 = x_2[2];
             if(odeint=="runge") {
+                m = m_2;
                 cpl::RK4Step(x_1, dt, derivates);
+
+                m = m_1;
                 cpl::RK4Step(x_2, dt, derivates);
             }
             else if(odeint=="rkck") {
+                m = m_2;
                 cpl::RKCKStep(x_1, dt, derivates);
+
+                m = m_1;
                 cpl::RKCKStep(x_2, dt, derivates);
 
             }
@@ -183,6 +198,10 @@ int main(int argc, char* argv[]) {
     //  ADAPTIVE STEP SIZE
     //
     else if(fixed_or_not == "adaptive") {
+        // Time measurement init and starts
+        auto start = std::chrono::steady_clock::now();
+        std::chrono::microseconds duration;
+
         //  Adaptive step size datafile and variable container 'x'
         dataFile.open("..\\out\\adaptive.dat");
         x_1 = x0_1;
@@ -194,6 +213,9 @@ int main(int argc, char* argv[]) {
         //  Adaptive step size
         std::cout << "\n Integrating with adaptive step size" << std::endl;
         do {
+            // Runtime test
+            duration = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - start);
+
             for(int i = 0; i < 5; i++) {
                 dataFile << x_1[i] << '\t';
             }
@@ -201,17 +223,23 @@ int main(int argc, char* argv[]) {
                 dataFile << x_2[i] << '\t';
             }
 
-            dataFile << kinetic_energy(x_1, m_1) << '\t' << kinetic_energy(x_2, m_2) << '\n';
+            dataFile << kinetic_energy(x_1, m_1) << '\t' << kinetic_energy(x_2, m_2) << '\t' << duration.count() << '\n';
             double t_save_1 = x_1[0];
             double t_save_2 = x_2[0];
             double y_1 = x_1[2];
             double y_2 = x_2[2];
             if(odeint=="runge") {
+                m = m_2;
                 cpl::adaptiveRK4Step(x_1, dt, accuracy, derivates);
+
+                m = m_1;
                 cpl::adaptiveRK4Step(x_2, dt, accuracy, derivates);
             }
             else if(odeint=="rkck") {
+                m = m_2;
                 cpl::adaptiveRKCKStep(x_1, dt, accuracy, derivates);
+
+                m = m_1;
                 cpl::adaptiveRKCKStep(x_2, dt, accuracy, derivates);
 
             }

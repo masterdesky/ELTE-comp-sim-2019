@@ -115,7 +115,7 @@ int main(int argc, char* argv[]) {
             while (theta >= pi) theta -= 2 * pi;
             while (theta < -pi) theta += 2 * pi;
         }
-        
+
         // Runtime test
         duration = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - start);
         
