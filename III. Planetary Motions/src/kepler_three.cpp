@@ -142,12 +142,13 @@ int main(int argc, char* argv[]) {
     std::vector<double> SmallBodyMasses(number_of_bodies);
 
     // Read in data of small bodies into a vector
-    std::ifstream inputFile("small_objects.dat");
+    std::ifstream inputFile("..\\out\\small_objects.dat");
 
-    int number_of_bodies = 0;                   // Number of small bodies in the simulation
+    std::cout << "File reading initialization...";
     // Check if input file exists
     if(inputFile.good()) {
         
+        std::cout << "Reading file begins";
         double current_number = 0;              // Storage for current read number from data file
         int current_column = 0;
         int current_row = 0;
@@ -229,6 +230,7 @@ int main(int argc, char* argv[]) {
                 dataFile << x_2[i] << '\t';
             }
             dataFile << kinetic_energy(x_1, m_1) << '\t' << kinetic_energy(x_2, m_2) << '\t' << duration.count() << '\n';
+            dataFile_small << '\n';
             double y_1 = x_1[2];
             double y_2 = x_2[2];
             if(odeint=="runge") {
