@@ -59,8 +59,8 @@ double gravitational_potential(const cpl::Vector& x, double& M) {
 cpl::Vector derivates(const cpl::Vector& x) {
     double t = x[0], r_x_Curr = x[1], r_y_Curr = x[2], v_x_Curr = x[3], v_y_Curr = x[4];
 
-    double rSquared_1 = (r_x_Curr - CurrentCoordinates[0])*(r_x_Curr - CurrentCoordinates[0]) + (r_x_Curr - CurrentCoordinates[1])*(r_x_Curr - CurrentCoordinates[3]);
-    double rSquared_2 = (r_x_Curr - CurrentCoordinates[2])*(r_x_Curr - CurrentCoordinates[2]) + (r_x_Curr - CurrentCoordinates[1])*(r_x_Curr - CurrentCoordinates[3]);
+    double rSquared_1 = (r_x_Curr - CurrentCoordinates[0])*(r_x_Curr - CurrentCoordinates[0]) + (r_y_Curr - CurrentCoordinates[1])*(r_y_Curr - CurrentCoordinates[1]);
+    double rSquared_2 = (r_x_Curr - CurrentCoordinates[2])*(r_x_Curr - CurrentCoordinates[2]) + (r_y_Curr - CurrentCoordinates[3])*(r_y_Curr - CurrentCoordinates[3]);
 
     double rCubed_1 = rSquared_1 * sqrt(rSquared_1);
     double rCubed_2 = rSquared_2 * sqrt(rSquared_2);
@@ -69,8 +69,8 @@ cpl::Vector derivates(const cpl::Vector& x) {
     f[0] = 1;
     f[1] = v_x_Curr;
     f[2] = v_y_Curr;
-    f[3] = - G * (m_temp_1 * CurrentCoordinates[0]/rCubed_1 - m_temp_2 * CurrentCoordinates[2]/rCubed_2);
-    f[4] = - G * (m_temp_1 * CurrentCoordinates[1]/rCubed_1 - m_temp_2 * CurrentCoordinates[3]/rCubed_2);
+    f[3] = - G * (m_temp_1 * (r_x_Curr - CurrentCoordinates[0])/rCubed_1 - m_temp_2 * (r_x_Curr - CurrentCoordinates[2])/rCubed_2);
+    f[4] = - G * (m_temp_1 * (r_y_Curr - CurrentCoordinates[1])/rCubed_1 - m_temp_2 * (r_y_Curr - CurrentCoordinates[3])/rCubed_2);
 
     // Relativistic effects for Keplerian orbit, due to special relativity
     if(relat) {
@@ -234,38 +234,44 @@ int main(int argc, char* argv[]) {
             double y_1 = x_1[2];
             double y_2 = x_2[2];
             if(odeint=="runge") {
-                m_temp_1 = m_2;
-                m_temp_2 = 0;
+                m_temp_1 = 0;
+                m_temp_2 = m_2;
+                CurrentCoordinates[0] = 1, CurrentCoordinates[1] = 1, CurrentCoordinates[2] = x_2[1], CurrentCoordinates[3] = x_2[2];
                 cpl::RK4Step(x_1, dt, derivates);
 
                 m_temp_1 = m_1;
                 m_temp_2 = 0;
+                CurrentCoordinates[0] = x_1[1], CurrentCoordinates[1] = x_1[2], CurrentCoordinates[2] = 1, CurrentCoordinates[3] = 1;
                 cpl::RK4Step(x_2, dt, derivates);
 
                 m_temp_1 = m_1;
                 m_temp_2 = m_2;
                 CurrentCoordinates[0] = x_1[1], CurrentCoordinates[1] = x_1[2], CurrentCoordinates[2] = x_2[1], CurrentCoordinates[3] = x_2[2];
                 for(int i = 0; i < number_of_bodies; i++) {
-                    x_3 = SmallBodies[i];
-                    double y_3 = x_3[2];
-                    cpl::RK4Step(x_3, dt, derivates);
+                    double y_3 = SmallBodies[i][2];
+                    cpl::RK4Step(SmallBodies[i], dt, derivates);
 
-                    if(y_3 * x_3[2] < 0) {
+                    double steps_temp = steps;
+                    steps++;
+                    if(y_3 * SmallBodies[i][2] < 0) {
                         interpolate_crossing(x_3, crossing);
                     }
 
-                    for(int i = 0; i < 5; i++) {
-                        dataFile_small << x_3[i] << '\t';
+                    for(int j = 0; j < 5; j++) {
+                        dataFile_small << SmallBodies[i][j] << '\t';
                     }
+                    steps = steps_temp;
                 }
             }
             else if(odeint=="rkck") {
-                m_temp_1 = m_2;
-                m_temp_2 = 0;
+                m_temp_1 = 0;
+                m_temp_2 = m_2;
+                CurrentCoordinates[0] = 1, CurrentCoordinates[1] = 1, CurrentCoordinates[2] = x_2[1], CurrentCoordinates[3] = x_2[2];
                 cpl::RKCKStep(x_1, dt, derivates);
 
                 m_temp_1 = m_1;
                 m_temp_2 = 0;
+                CurrentCoordinates[0] = x_1[1], CurrentCoordinates[1] = x_1[2], CurrentCoordinates[2] = 1, CurrentCoordinates[3] = 1;
                 cpl::RKCKStep(x_2, dt, derivates);
 
                 m_temp_1 = m_1;
@@ -353,17 +359,19 @@ int main(int argc, char* argv[]) {
             double y_1 = x_1[2];
             double y_2 = x_2[2];
             if(odeint=="runge") {
-                m_temp_1 = m_2;
-                m_temp_2 = 0;
+                m_temp_1 = 0;
+                m_temp_2 = m_2;
+                CurrentCoordinates[0] = 1, CurrentCoordinates[1] = 1, CurrentCoordinates[2] = x_2[1], CurrentCoordinates[3] = x_2[2];
                 cpl::adaptiveRK4Step(x_1, dt, accuracy, derivates);
 
                 m_temp_1 = m_1;
                 m_temp_2 = 0;
+                CurrentCoordinates[0] = x_1[1], CurrentCoordinates[1] = x_1[2], CurrentCoordinates[2] = 1, CurrentCoordinates[3] = 1;
                 cpl::adaptiveRK4Step(x_2, dt, accuracy, derivates);
 
                 m_temp_1 = m_1;
                 m_temp_2 = m_2;
-                CurrentCoordinates[0] = x_1[1], CurrentCoordinates[1] = x_1[2], CurrentCoordinates[2] = x_2[1], CurrentCoordinates[3] = x_2[2];
+                CurrentCoordinates[0] = 1, CurrentCoordinates[1] = x_1[2], CurrentCoordinates[2] = x_2[1], CurrentCoordinates[3] = x_2[2];
                 for(int i = 0; i < number_of_bodies; i++) {
                     x_3 = SmallBodies[i];
                     double t_save_3 = x_3[0];
