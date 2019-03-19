@@ -245,6 +245,31 @@ A gravitációs többtest-probléma megértéséhez először a kéttest-problé
 Ezek mindegyikéről animációkat készítettem az áttekinthetőség kedvéért. Mindegyik animáción megfigyelhető, hogy a két keringő égitest, habár azonos szögsebességgel kéne forogniuk, mégsem teszik azt. Ez annak tudható be valószínűleg, miszerint a vizsgált esetekben a központi égitest pályája nagyon apró, így a numerikus hibákra jóval érzékenyebb is. Az eltérés nem nagy, azonban hosszú futásidő után már jól látszik az aszinkron mozgás. Minden erről készült animáció - ahogy már említve volt - elérhető YouTube-on\cite{yt}.
 
 \subsection{Háromtest-probléma} \label{sub:4.4}
-A háromtest problémát az kéttesttel ellentétben a testek egymáshoz képesti relatív távolságának megadásával írtam le és implementáltam a szimulációban. Ezt a Nap-Jupiter rendszerre vizsgáltam, melybe a Jupiter pályájának környékére apró törmelékeket szórtam. Célom ezen véletlenszerű törmelékhalmaz mozgásának és a Lagrange-pontokba feltételezett stabilitásának vizsgálata volt. A Nap-Jupiter kéttest problémáját sikeresen vissza is adja a program, azonban a törmelékek mozgását a ledaási határidőig nem sikerült még teljes mértékben jól szimulálnom. A probléma a random módon leszór aszteroidák kezdősebességeinek megválasztásával van, melyre még nem sikerült pontos megoldást találnom. Az eddigi legjobb próbálkozásomról való szimuláció elérhető szintén YouTube-onn\cite{yt}. Egy teljes orbitokat mutató példakép megtekinthető a függelék végén (\ref{fig:14}). Minden egyéb nem említett kód és kép elérhető a már szintén említett GitHub-on\cite{github}.
+A háromtest problémát az kéttesttel ellentétben a testek egymáshoz képesti relatív távolságának megadásával írtam le és implementáltam a szimulációban. Ezt a Nap-Jupiter rendszerre vizsgáltam, melybe a Jupiter pályájának környékére apró törmelékeket szórtam. Célom ezen véletlenszerű törmelékhalmaz mozgásának és a Lagrange-pontokba feltételezett stabilitásának vizsgálata volt. A Nap-Jupiter kéttest problémáját sikeresen vissza is adja a program, azonban a törmelékek mozgását a ledaási határidőig nem sikerült még teljes mértékben jól szimulálnom. A probléma a random módon leszór aszteroidák kezdősebességeinek megválasztásával van, melyre még nem sikerült még minden esetben pontos megoldást találnom. Az eddigi legjobb próbálkozásomról való szimuláció elérhető szintén YouTube-onn\cite{yt}. Egy teljes orbitokat mutató példakép megtekinthető a függelék végén (\ref{fig:14}). Minden egyéb nem említett kód és kép elérhető a már szintén említett GitHub-on\cite{github}.
+
+\section{Futásidő} \label{sec:6}
+Vizsgáltam az egyes integráló módszerek közti futásidő különbségét is. Ehhez azonos adaptív pontosságot és fix lépésközt választottam, majd az ezekhez szükséges futásidőt a Merkúr keringését szimulálva monitoroztam. Ehhez magában a szimulációban különböző időhosszakat választva figyeltem a Merkúr mozgását, majd teljes futásidőt a választott időhossz függvényében plottoltam. Az adatokat $10$-től kezdődően $80$ szimulált évig vettem fel, évenként pontosan egyet. Ezeket mind $\text{dt}=\text{acc}_{\text{adapt.}}=10^{-3}$, mind pedig $\text{dt}=\text{acc}_{\text{adapt.}}=10^{-4}$ lépésközökre, nem mellesleg a kepleri- és relativisztikus dinamika esetére is megvizsgáltam. Az alábbi grafikonokat kaptam ennek végén:
+\hfill \break \break
+{\centering\includegraphics[width=0.5\textwidth]{images/single_body/runtime_all_1e-03.pdf}}
+\captionof{figure}{Lépésköz nagysága $0.001 = 10^{-3}$ év}
+\hfill \break \break
+{\centering\includegraphics[width=0.5\textwidth]{images/single_body/runtime_all_1e-04.pdf}}
+\captionof{figure}{Lépésköz nagysága $0.0001 = 10^{-4}$ év}
+\hfill \break \break
+Külön is ábrázoltam a nulla közelében elvesző adaptív integráló módszereket a jobb átláthatóság kedvéért:
+\hfill \break \break
+{\centering\includegraphics[width=0.5\textwidth]{images/single_body/runtime_adaptive_1e-03.pdf}}
+\captionof{figure}{Adaptív integráló módszerek\\Lépésköz nagysága $0.001 = 10^{-3}$ év}
+\hfill \break \break
+{\centering\includegraphics[width=0.5\textwidth]{images/single_body/runtime_adaptive_1e-04.pdf}}
+\captionof{figure}{Adaptív integráló módszerek\\Lépésköz nagysága $0.0001 = 10^{-4}$ év}
+\hfill \break \break
+Ahogy vártuk, az adaptív lépéshosszal operáló módszerek gyorsabbak, hisz átlagosan mindig kevesebb lépést tettek meg a szimuláció során, adaptívan közelítve a Merkúr körpályáját. Szintén a vártaknak megfelelően a relativisztikus módszerek lassabban futnak le, mind a kepleri dinamikával operálók, ugyanis plusz két darab művelet szerepel benne a sebességkomponensek Lorentz-faktorokkal történő szorzása miatt. \\
+Érdekes megfigyelni, hogy a Runge-Kutta-Cash-Karp algoritmusok $\text{dt} = 0.001 = 10^{-3}$ esetén valamiért futásidőben elszállnak, aminek az okát egyelőre nem tudtam megállapítani, ehhez további vizsgálatok szükségesek.
+
+\section{Diszkusszió} \label{sec:5}
+A szimuláció során megvizsgáltam annak numerikus stabilitását, megállapítottam, hogy kisebb ($10^{-3}-10^{-4}$) lépésköz esetén is előjönnek numerikus hibákból származó eltérések. Megállapítottam, hogy emiatt a Merkúr perihélium-precessziója a zajban elveszik, csak kisebb lépésközökkel, vagy a Lorentz-faktor súlyának manuális megválasztásával lehetne csak annak a tartományát elérni, amiket a hosszú futásidejük miatt már nem végeztem el. Ellenben a lépésköz $\text{dt}=10^{-5}$ megválasztásával már elértem valós adatokat használva a Merkúr precessziójának nagyságrendjét, és közelítő értékét.\\
+Vizsgáltam az adaptív lépéshosszal operáló módszerek lépéshosszváltozását az időben előrehaladva. Megállapítottam azok karakterisztikáját és a választott pontosságok közti különbségeket, amiket a (\ref{sub:4.2}) részben ismertettem.\\
+Végezetül a két- és háromtest-problémát oldottam meg, melyekről több animációt is készítettem, ugyanis a problémák és megoldásuk lényege legjobban azokon látszódhat. Ezeket meg is osztottam és elérhetővé tettem YouTube-on\cite{yt}.
 
 \end{multicols}
