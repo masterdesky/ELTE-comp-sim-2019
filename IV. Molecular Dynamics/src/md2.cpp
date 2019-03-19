@@ -6,10 +6,11 @@
 using namespace std;
 
 // simulation parameters
+int N;                    // number of particles
+double rho;               // density (number per unit volume)
+double T;                 // temperature
 
-int N = 64;               // number of particles
-double rho = 0.95;        // density (number per unit volume)
-double T = 1.0;           // temperature
+double **r, **v, **a;     // positions, velocities, accelerations
 
 // function declarations
 
@@ -18,10 +19,6 @@ void initPositions();     // places particles on an fcc lattice
 void initVelocities();    // initial Maxwell-Boltzmann velocity distribution
 void rescaleVelocities(); // adjust the instanteous temperature to T
 double gasdev();          // Gaussian distributed random numbers
-
-double **r;               // positions
-double **v;               // velocities
-double **a;               // accelerations
 
 void initialize() {
     r = new double* [N];
@@ -177,12 +174,29 @@ double instantaneousTemperature() {
     return sum / (3 * (N - 1));
 }
 
-int main() {
+int main(int argc, char* argv[]) {
+
+    int n = atoi(argv[1]);          // Number of steps
+    N = atoi(argv[2]);              // Number of particles
+    rho = atof(argv[3]);            // Density (number per unit volume)
+    T = atof(argv[4]);              // Temperature
+
     initialize();
     double dt = 0.01;
-    ofstream file("T2.data");
-    for (int i = 0; i < 1000; i++) {
+    ofstream file("..\\out\\md2.dat");
+    for (int i = 0; i < n; i++) {
         velocityVerlet(dt);
+        for(int j = 0; j < N; j++) {
+            for(int k = 0; k < 3; k++) {
+                file << r[j][k] << '\t';
+            }
+            for(int k = 0; k < 3; k++) {
+                file << v[j][k] << '\t';
+            }
+            for(int k = 0; k < 3; k++) {
+                file << a[j][k] << '\t';
+            }
+        }
         file << instantaneousTemperature() << '\n';
         if (i % 200 == 0)
             rescaleVelocities();

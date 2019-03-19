@@ -6,9 +6,9 @@
 using namespace std;
 
 // simulation parameters
-int N = 864;              // number of particles
-double rho = 1.2;         // density (number per unit volume)
-double T = 1.0;           // temperature
+int N;                    // number of particles
+double rho;               // density (number per unit volume)
+double T;                 // temperature
 double L;                 // will be computed from N and rho
 
 double **r, **v, **a;     // positions, velocities, accelerations
@@ -139,15 +139,32 @@ void velocityVerlet(double dt) {
             v[i][k] += 0.5 * a[i][k] * dt;
 }
 
-int main() {
+int main(int argc, char* argv[]) {
+
+    int n = atoi(argv[1]);          // Number of steps
+    N = atoi(argv[2]);              // Number of particles
+    rho = atof(argv[3]);            // Density (number per unit volume)
+    T = atof(argv[4]);              // Temperature
+
     initialize();
     updatePairList();
     updatePairSeparations();
     computeAccelerations();
     double dt = 0.01;
-    ofstream file("T3.data");
-    for (int i = 0; i < 1000; i++) {
+    ofstream file("..\\out\\md3.dat");
+    for (int i = 0; i < n; i++) {
         velocityVerlet(dt);
+        for(int j = 0; j < N; j++) {
+            for(int k = 0; k < 3; k++) {
+                file << r[j][k] << '\t';
+            }
+            for(int k = 0; k < 3; k++) {
+                file << v[j][k] << '\t';
+            }
+            for(int k = 0; k < 3; k++) {
+                file << a[j][k] << '\t';
+            }
+        }
         file << instantaneousTemperature() << '\n';
         if (i % 200 == 0)
             rescaleVelocities();

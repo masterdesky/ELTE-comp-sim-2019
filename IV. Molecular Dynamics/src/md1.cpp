@@ -79,12 +79,27 @@ double instantaneousTemperature() {
     return sum / (3 * (N - 1));
 }
 
-int main() {
+int main(int argc, char* argv[]) {
+    
+    int n = atoi(argv[1]);          // Number of steps
+
     initialize();
     double dt = 0.01;
-    ofstream file("T.data");
-    for (int i = 0; i < 1000; i++) {
+    ofstream file("..\\out\\md1.dat");
+    for (int i = 0; i < n; i++) {
         velocityVerlet(dt);
+        
+        for(int j = 0; j < N; j++) {
+            for(int k = 0; k < 3; k++) {
+                file << r[j][k] << '\t';
+            }
+            for(int k = 0; k < 3; k++) {
+                file << v[j][k] << '\t';
+            }
+            for(int k = 0; k < 3; k++) {
+                file << a[j][k] << '\t';
+            }
+        }
         file << instantaneousTemperature() << '\n';
     }
     file.close();
