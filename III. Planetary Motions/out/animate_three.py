@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+import random
 import os
 import sys
 from datetime import datetime
@@ -109,8 +110,6 @@ plotting_years = 5 * T
 steps = 1
 fps = 40
 image_dpi = 150
-image_format = 'pdf'
-image_path = '..\\Documentation\\src\\images\\three_body\\'
 
 
 def ANIMATE_VIDEO(path, video_path, gen_video_title, packages):
@@ -186,7 +185,7 @@ def ANIMATE_VIDEO(path, video_path, gen_video_title, packages):
                     bad_bodies.append(k)
                     continue
                 else:
-                    ax.plot(data_small[::steps,1+k*5][imin:imax],data_small[::steps,2+k*5][imin:imax], lw=2, alpha=alpha)
+                    ax.plot(data_small[::steps,1+k*5][imin:imax],data_small[::steps,2+k*5][imin:imax], color=colors[k], lw=2, alpha=alpha)
 
         legend_elements = [Line2D([0], [0], color='red', lw=1, label='Orbit of {0}'.format(choosen_planet_1)),
                            Line2D([0], [0], color='green', lw=1, label='Orbit of {0}'.format(choosen_planet_2)),
@@ -226,5 +225,10 @@ data_fixed = np.genfromtxt('fixed.dat')
 data_small = np.genfromtxt('fixed_smalls.dat')
 
 half_number_of_bodies = data_small.shape[1]//10
+
+colors = np.empty((half_number_of_bodies*2,3))
+
+for i in range(0,len(colors)):
+    colors[i] = np.array([random.random(), random.random(), random.random()])
 
 ANIMATE_VIDEO(path = '.\\frames\\', video_path='.\\videos\\', gen_video_title='threebody', packages=20)

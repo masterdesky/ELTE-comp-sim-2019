@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+import random
 import os
 import sys
 from datetime import datetime
@@ -89,8 +90,8 @@ def ANIMATE_VIDEO(path, video_path, gen_video_title, packages):
             # The fading looks better if we square the fractional length along the trail
             alpha = (j/ns)**2
 
-            for i in range(0, (data_set_1.shape[1]-1)//9):
-                axes.plot(data_set_1[::steps,i*9][imin:imax], data_set_1[::steps,i*9+1][imin:imax], data_set_1[::steps,i*9+2][imin:imax], lw=3, alpha=alpha)
+            for k in range(0, (data_set_1.shape[1]-1)//9):
+                axes.plot(data_set_1[::steps,k*9][imin:imax], data_set_1[::steps,k*9+1][imin:imax], data_set_1[::steps,k*9+2][imin:imax], lw=5, color=colors[k], alpha=alpha)
                 #axes[1].plot(data_set_1[::steps,i*9+3][imin:imax], data_set_1[::steps,i*9+4][imin:imax], data_set_1[::steps,i*9+5][imin:imax], lw=3, alpha=alpha)
                 #axes[2].plot(data_set_1[::steps,i*9+6][imin:imax], data_set_1[::steps,i*9+7][imin:imax], data_set_1[::steps,i*9+8][imin:imax], lw=3, alpha=alpha)
 
@@ -123,5 +124,10 @@ def ANIMATE_VIDEO(path, video_path, gen_video_title, packages):
 
 # MAIN
 data_set_1 = np.genfromtxt('md1.dat')
+
+colors = np.empty(((data_set_1.shape[1]-1)//3,3))
+
+for i in range(0,len(colors)):
+    colors[i] = np.array([random.random(), random.random(), random.random()])
 
 ANIMATE_VIDEO(path = '.\\frames\\', video_path='.\\videos\\', gen_video_title='threebody', packages=20)
