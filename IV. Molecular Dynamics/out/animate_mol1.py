@@ -10,6 +10,7 @@ from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.patches import Circle
 from matplotlib.patches import Patch
 from matplotlib.lines import Line2D
+import mpl_toolkits.mplot3d.art3d as art3d
 
 sns.set_style(style='whitegrid')
 # Others
@@ -91,7 +92,14 @@ def ANIMATE_VIDEO(path, video_path, gen_video_title, packages):
             alpha = (j/ns)**2
 
             for k in range(0, (data_set_1.shape[1]-1)//9):
-                axes.plot(data_set_1[::steps,k*9][imin:imax], data_set_1[::steps,k*9+1][imin:imax], data_set_1[::steps,k*9+2][imin:imax], lw=5, color=colors[k], alpha=alpha)
+                art3d.pathpatch_2d_to_3d(Circle((data_set_1[::steps,k*9][i],
+                                                 data_set_1[::steps,k*9+1][i]), 0.1,
+                                                 fc=colors[k], ec=colors[k], zorder=10),
+                                                 z=data_set_1[::steps,k*9+2][i], zdir=i)
+                
+                axes.plot(data_set_1[::steps,k*9][imin:imax],
+                          data_set_1[::steps,k*9+1][imin:imax],
+                          data_set_1[::steps,k*9+2][imin:imax], lw=5, color=colors[k], alpha=alpha)
                 #axes[1].plot(data_set_1[::steps,i*9+3][imin:imax], data_set_1[::steps,i*9+4][imin:imax], data_set_1[::steps,i*9+5][imin:imax], lw=3, alpha=alpha)
                 #axes[2].plot(data_set_1[::steps,i*9+6][imin:imax], data_set_1[::steps,i*9+7][imin:imax], data_set_1[::steps,i*9+8][imin:imax], lw=3, alpha=alpha)
 
