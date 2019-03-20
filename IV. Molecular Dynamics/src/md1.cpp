@@ -5,13 +5,16 @@
 #include <string>
 using namespace std;
 
-const int N = 64;         // number of particles
-double r[N][3];           // positions
-double v[N][3];           // velocities
-double a[N][3];           // accelerations
+const int N = 64;         // Number of particles
+double r[N][3];           // Positions
+double v[N][3];           // Velocities
+double a[N][3];           // Accelerations
+double T;                 // Temperature
 
-double L = 10;            // linear size of cubical volume
-double vMax = 0.1;        // maximum initial velocity component
+double L = 10;            // Linear size of cubical volume
+double vMax = 0.1;        // Maximum initial velocity component
+
+std::string boundary;
 
 void initialize() {
 
@@ -36,6 +39,17 @@ void initialize() {
             v[p][i] = vMax * (2 * rand() / double(RAND_MAX) - 1);
 }
 
+void rescaleVelocities() {
+    double vSqdSum = 0;
+    for (int n = 0; n < N; n++)
+        for (int i = 0; i < 3; i++)
+            vSqdSum += v[n][i] * v[n][i];
+    double lambda = sqrt( 3 * (N-1) * T / vSqdSum );
+    for (int n = 0; n < N; n++)
+        for (int i = 0; i < 3; i++)
+            v[n][i] *= lambda;
+}
+
 void computeAccelerations() {
 
     for (int i = 0; i < N; i++)          // set all accelerations to zero
@@ -47,7 +61,16 @@ void computeAccelerations() {
             double rij[3];               // position of i relative to j
             double rSqd = 0;
             for (int k = 0; k < 3; k++) {
-                rij[k] = r[i][k] - r[j][k];    
+                rij[k] = r[i][k] - r[j][k];
+                if(boundary == "periodic") {
+                    // closest image convention   
+                    if (abs(rij[k]) > 0.5 * L) {
+                        if (rij[k] > 0)
+                            rij[k] -= L;
+                        else
+                            rij[k] += L;
+                    }
+                }
                 rSqd += rij[k] * rij[k];
             }
             double f = 24 * (2 * pow(rSqd, -7) - pow(rSqd, -4));
@@ -60,28 +83,53 @@ void computeAccelerations() {
 
 void velocityVerlet(double dt) {
     computeAccelerations();
-    for (int i = 0; i < N; i++)
+    for (int i = 0; i < N; i++) {
         for (int k = 0; k < 3; k++) {
             r[i][k] += v[i][k] * dt + 0.5 * a[i][k] * dt * dt;
+
+            if(boundary == "periodic") {
+                // use periodic boundary conditions
+                if (r[i][k] < 0) {
+                    r[i][k] += L;
+                }
+                if (r[i][k] >= L) {
+                    r[i][k] -= L;
+                }
+            }
             v[i][k] += 0.5 * a[i][k] * dt;
         }
+    }
     computeAccelerations();
-    for (int i = 0; i < N; i++)
-        for (int k = 0; k < 3; k++)
+    for (int i = 0; i < N; i++) {
+        for (int k = 0; k < 3; k++) {
+            if(boundary == "bounded") {
+                // use periodic boundary conditions
+                if (r[i][k] < 0 || r[i][k] >= L) {
+                    v[i][k] *= -1;
+                    a[i][k] *= -1;
+                }
+            }
             v[i][k] += 0.5 * a[i][k] * dt;
+        }
+    }
 }
+
 
 double instantaneousTemperature() {
     double sum = 0;
-    for (int i = 0; i < N; i++)
-        for (int k = 0; k < 3; k++)
+    for (int i = 0; i < N; i++) {
+        for (int k = 0; k < 3; k++) {
             sum += v[i][k] * v[i][k];
+        }
+    }
     return sum / (3 * (N - 1));
 }
 
 int main(int argc, char* argv[]) {
     
-    int n = atoi(argv[1]);          // Number of steps
+    boundary = argv[1];             // Mode for boundary conditions
+    int n = atoi(argv[2]);          // Number of steps
+    T = atoi(argv[3]);              // Temperature
 
     initialize();
     double dt = 0.01;
@@ -101,6 +149,8 @@ int main(int argc, char* argv[]) {
             }
         }
         file << instantaneousTemperature() << '\n';
+        if (i % 200 == 0)
+            rescaleVelocities();
     }
     file.close();
 }

@@ -19,6 +19,7 @@ fps = 40
 image_dpi = 150
 image_format = 'pdf'
 
+
 def ANIMATE_VIDEO(path, video_path, gen_video_title, packages):
     
     video_title = video_path + gen_video_title
@@ -49,34 +50,13 @@ def ANIMATE_VIDEO(path, video_path, gen_video_title, packages):
         axes.set_ylabel('Distance (y) [$m$]', fontsize=axislabelsize, labelpad=labelpad)
         axes.set_zlabel('Distance (z) [$m$]', fontsize=axislabelsize, labelpad=labelpad)
 
-        #axes[1].set_xlabel('Velocity (x) [$\\frac{m}{s}$]', fontsize=axislabelsize, labelpad=labelpad)
-        #axes[1].set_ylabel('Velocity (y) [$\\frac{m}{s}$]', fontsize=axislabelsize, labelpad=labelpad)
-        #axes[1].set_zlabel('Velocity (z) [$\\frac{m}{s}$]', fontsize=axislabelsize, labelpad=labelpad)
-
-        #axes[2].set_xlabel('Acceleration (x) [$\\frac{m}{s^{2}}$]', fontsize=axislabelsize, labelpad=labelpad)
-        #axes[2].set_ylabel('Acceleration (y) [$\\frac{m}{s^{2}}$]', fontsize=axislabelsize, labelpad=labelpad)
-        #axes[2].set_zlabel('Acceleration (z) [$\\frac{m}{s^{2}}$]', fontsize=axislabelsize, labelpad=labelpad)
-
         axes.tick_params(axis='both', which='major', labelsize=axislabelsize)
-        #axes[1].tick_params(axis='both', which='major', labelsize=axislabelsize)
-        #axes[2].tick_params(axis='both', which='major', labelsize=axislabelsize)
         
         # Centre the image on the fixed anchor point, and ensure the axes are equal
-        axes.set_xlim(0,10)
-        axes.set_ylim(0,10)
-        axes.set_zlim(0,10)
-
-        #axes[1].set_xlim(-3,3)
-        #axes[1].set_ylim(-3,3)
-        #axes[1].set_zlim(-3,3)
-
-        #axes[2].set_xlim(-60,60)
-        #axes[2].set_ylim(-60,60)
-        #axes[2].set_zlim(-60,60)
-        
+        axes.set_xlim(0,L)
+        axes.set_ylim(0,L)
+        axes.set_zlim(0,L)
         axes.set_aspect('equal', adjustable='box')
-        #axes[1].set_aspect('equal', adjustable='box')
-        #axes[2].set_aspect('equal', adjustable='box')
 
         # TRAILING EFFECT FROM: https://scipython.com/blog/the-double-pendulum/
         # The trail will be divided into ns segments and plotted as a fading line.
@@ -91,17 +71,13 @@ def ANIMATE_VIDEO(path, video_path, gen_video_title, packages):
             # The fading looks better if we square the fractional length along the trail
             alpha = (j/ns)**2
 
-            for k in range(0, (data_set_1.shape[1]-1)//9):
-                art3d.pathpatch_2d_to_3d(Circle((data_set_1[::steps,k*9][i],
-                                                 data_set_1[::steps,k*9+1][i]), 0.1,
-                                                 fc=colors[k], ec=colors[k], zorder=10),
-                                                 z=data_set_1[::steps,k*9+2][i], zdir=i)
+            for k in range(0, (data_set.shape[1]-1)//9):
+                # Molecules
+                axes.scatter(data_set[::steps,k*9][i], data_set[::steps,k*9+1][i], data_set[::steps,k*9+2][i], color='red', s=200)
                 
-                axes.plot(data_set_1[::steps,k*9][imin:imax],
-                          data_set_1[::steps,k*9+1][imin:imax],
-                          data_set_1[::steps,k*9+2][imin:imax], lw=5, color=colors[k], alpha=alpha)
-                #axes[1].plot(data_set_1[::steps,i*9+3][imin:imax], data_set_1[::steps,i*9+4][imin:imax], data_set_1[::steps,i*9+5][imin:imax], lw=3, alpha=alpha)
-                #axes[2].plot(data_set_1[::steps,i*9+6][imin:imax], data_set_1[::steps,i*9+7][imin:imax], data_set_1[::steps,i*9+8][imin:imax], lw=3, alpha=alpha)
+                axes.scatter(data_set[::steps,k*9][imin:imax],
+                             data_set[::steps,k*9+1][imin:imax],
+                             data_set[::steps,k*9+2][imin:imax], lw=5, color=colors[k], alpha=alpha)
 
 
         fig.tight_layout()
@@ -120,20 +96,30 @@ def ANIMATE_VIDEO(path, video_path, gen_video_title, packages):
         os.unlink(path + '_img{0:4d}.png'.format(i))
 
     with imageio.get_writer(video_title + '.mp4', fps=fps) as writer:
-        for i in range(0, data_set_1.shape[0]):
+        for i in range(0, data_set.shape[0]):
             animation(i)
-            sys.stdout.write("Progress: [{0}{1}] {2:.3f}%\tElapsed: {3}\tRemaining: {4}\r".format(u'\u2588' * int((i+1)/data_set_1.shape[0] * progressbar_width),
-                                                                                                  u'\u2591' * (progressbar_width - int((i+1)/data_set_1.shape[0] * progressbar_width)),
-                                                                                                  (i+1)/data_set_1.shape[0] * 100,
+            sys.stdout.write("Progress: [{0}{1}] {2:.3f}%\tElapsed: {3}\tRemaining: {4}\r".format(u'\u2588' * int((i+1)/data_set.shape[0] * progressbar_width),
+                                                                                                  u'\u2591' * (progressbar_width - int((i+1)/data_set.shape[0] * progressbar_width)),
+                                                                                                  (i+1)/data_set.shape[0] * 100,
                                                                                                   datetime.now()-starttime,
-                                                                                                  (datetime.now()-starttime)/(i+1) * (data_set_1.shape[0] - (i+1))))
+                                                                                                  (datetime.now()-starttime)/(i+1) * (data_set.shape[0] - (i+1))))
             sys.stdout.flush()
 
 
 # MAIN
-data_set_1 = np.genfromtxt('md1.dat')
+if sys.argv[1] == '1':
+    data_set = np.genfromtxt('md1.dat')
+if sys.argv[1] == '2':
+    data_set = np.genfromtxt('md2.dat')
+if sys.argv[1] == '3':
+    data_set = np.genfromtxt('md3.dat')
 
-colors = np.empty(((data_set_1.shape[1]-1)//3,3))
+# Some simulation parameters
+N=64
+rho=0.95
+L = pow(N / rho, 1.0/3)
+
+colors = np.empty(((data_set.shape[1]-1)//3,3))
 
 for i in range(0,len(colors)):
     colors[i] = np.array([random.random(), random.random(), random.random()])
