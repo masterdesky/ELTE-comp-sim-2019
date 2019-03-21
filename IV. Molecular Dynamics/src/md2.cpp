@@ -11,6 +11,7 @@ double rho;               // density (number per unit volume)
 double T;                 // temperature
 
 double **r, **v, **a;     // positions, velocities, accelerations
+std::string boundary;
 
 // function declarations
 
@@ -130,12 +131,14 @@ void computeAccelerations() {
             for (int k = 0; k < 3; k++) {
                 rij[k] = r[i][k] - r[j][k]; 
 
-                // closest image convention   
-                if (abs(rij[k]) > 0.5 * L) {
-                    if (rij[k] > 0)
-                        rij[k] -= L;
-                    else
-                        rij[k] += L;
+                if(boundary == "periodic") {
+                    // closest image convention   
+                    if (abs(rij[k]) > 0.5 * L) {
+                        if (rij[k] > 0)
+                            rij[k] -= L;
+                        else
+                            rij[k] += L;
+                    }
                 }
                 rSqd += rij[k] * rij[k];
             }
@@ -149,21 +152,33 @@ void computeAccelerations() {
 
 void velocityVerlet(double dt) {
     computeAccelerations();
-    for (int i = 0; i < N; i++)
+    for (int i = 0; i < N; i++) {
         for (int k = 0; k < 3; k++) {
             r[i][k] += v[i][k] * dt + 0.5 * a[i][k] * dt * dt;
 
-            // use periodic boundary conditions
-            if (r[i][k] < 0)
-                r[i][k] += L;
-            if (r[i][k] >= L)
-                r[i][k] -= L;
+            if(boundary == "periodic") {
+                // use periodic boundary conditions
+                if (r[i][k] < 0)
+                    r[i][k] += L;
+                if (r[i][k] >= L)
+                    r[i][k] -= L;
+            }
             v[i][k] += 0.5 * a[i][k] * dt;
         }
+    }
     computeAccelerations();
-    for (int i = 0; i < N; i++)
-        for (int k = 0; k < 3; k++)
+    for (int i = 0; i < N; i++) {
+        for (int k = 0; k < 3; k++) {
+            if(boundary == "bounded") {
+                // use periodic boundary conditions
+                if (r[i][k] < 0 || r[i][k] >= L) {
+                    v[i][k] *= -1;
+                    a[i][k] *= -1;
+                }
+            }
             v[i][k] += 0.5 * a[i][k] * dt;
+        }
+    }
 }
 
 double instantaneousTemperature() {
@@ -176,10 +191,11 @@ double instantaneousTemperature() {
 
 int main(int argc, char* argv[]) {
 
-    int n = atoi(argv[1]);          // Number of steps
-    N = atoi(argv[2]);              // Number of particles
-    rho = atof(argv[3]);            // Density (number per unit volume)
-    T = atof(argv[4]);              // Temperature
+    boundary = argv[1];
+    int n = atoi(argv[2]);          // Number of steps
+    N = atoi(argv[3]);              // Number of particles
+    rho = atof(argv[4]);            // Density (number per unit volume)
+    T = atof(argv[5]);              // Temperature
 
     initialize();
     double dt = 0.01;
