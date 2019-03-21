@@ -44,11 +44,11 @@ def ANIMATE_VIDEO(path, video_path, gen_video_title, packages):
     ##ANIMATION STUFF BEGINS HERE##
     # Plot and save an image of the twobody system for time point i
     def animation(i):
-            
+
         # Axis labels
-        axes.set_xlabel('Distance (x) [$m$]', fontsize=axislabelsize, labelpad=labelpad)
-        axes.set_ylabel('Distance (y) [$m$]', fontsize=axislabelsize, labelpad=labelpad)
-        axes.set_zlabel('Distance (z) [$m$]', fontsize=axislabelsize, labelpad=labelpad)
+        axes.set_xlabel('Distance (x)', fontsize=axislabelsize, labelpad=labelpad)
+        axes.set_ylabel('Distance (y)', fontsize=axislabelsize, labelpad=labelpad)
+        axes.set_zlabel('Distance (z)', fontsize=axislabelsize, labelpad=labelpad)
 
         axes.tick_params(axis='both', which='major', labelsize=axislabelsize)
         
@@ -82,8 +82,9 @@ def ANIMATE_VIDEO(path, video_path, gen_video_title, packages):
 
         fig.tight_layout()
 
-        # Don't show axes, only white background
-        #ax.axis('off')
+        if sys.argv[1] == '1':
+            # Don't show axes, only white background
+            axes.axis('off')
 
         plt.savefig(path + '_img{0:4d}.png'.format(i), dpi=72)    # Save next frame as png
         image = imageio.imread(path + '_img{0:4d}.png'.format(i)) # Load saved image
@@ -115,9 +116,13 @@ if sys.argv[1] == '3':
     data_set = np.genfromtxt('md3.dat')
 
 # Some simulation parameters
-N=64
-rho=0.95
-L = pow(N / rho, 1.0/3)
+if sys.argv[1] == '2':
+    N=64
+    rho=0.95
+    L = pow(N / rho, 1.0/3)
+
+else:
+    L = 10
 
 colors = np.empty(((data_set.shape[1]-1)//3,3))
 
