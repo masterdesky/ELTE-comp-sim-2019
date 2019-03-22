@@ -132,8 +132,8 @@ if sys.argv[1] == '2':
     L = pow(N / rho, 1.0/3)
 
 if sys.argv[1] == '3':
-    N=864
-    rho=0.99
+    N=64
+    rho=0.95
     L = pow(N / rho, 1.0/3)
 
 # Limits of animated parts
