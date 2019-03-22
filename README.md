@@ -15,6 +15,7 @@ On the third occasion of the *Computer Simulations* course, numerical methods fo
 We modeled the one-, two-, and three-body problems, as well as examined Mercury's perihelion precession, supplementing the motion equations with relativistic effects. Finally, in the case of the three-body problem, we modeled the movement of the asteroids and meteorites in the Sun-Jupiter system and monitored their equilibrium at the system's Lagrange points.
 
 ## IV. Simulation: Molecular Dynamics
+On the fourth occasion of the *Computer Simulations* laboratory, we reviewed thermodynamics and statistical physics, and their approach to physics. In this case, this meant that we studied the microscopic dynamics of large number of interacting particles and used it to map some macroscopic properties of the examined system. These included examining the equilibrium position of the system and modeling temperature, pressure, total energy, compression factor, and heat capacity in this state. In addition, we got to know the Verlet and velocity-Verlet algorithms, as well as the corrections used along with them. These algorithms are commonly used in molecular dynamics simulations because of their speed, compared to other iterative methods.
 
 ## V. Simulation: Population Dynamics
 
