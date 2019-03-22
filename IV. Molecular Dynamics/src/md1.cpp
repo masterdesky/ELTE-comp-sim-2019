@@ -62,6 +62,7 @@ void computeAccelerations() {
             double rSqd = 0;
             for (int k = 0; k < 3; k++) {
                 rij[k] = r[i][k] - r[j][k];
+                
                 if(boundary == "periodic") {
                     // closest image convention   
                     if (abs(rij[k]) > 0.5 * L) {

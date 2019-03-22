@@ -158,10 +158,12 @@ void velocityVerlet(double dt) {
 
             if(boundary == "periodic") {
                 // use periodic boundary conditions
-                if (r[i][k] < 0)
+                if (r[i][k] < 0) {
                     r[i][k] += L;
-                if (r[i][k] >= L)
+                }
+                if (r[i][k] >= L) {
                     r[i][k] -= L;
+                }
             }
             v[i][k] += 0.5 * a[i][k] * dt;
         }
