@@ -132,7 +132,7 @@ void computeAccelerations() {
                 rij[k] = r[i][k] - r[j][k]; 
 
                 if(boundary == "periodic") {
-                    // closest image convention   
+                    // closest image convention
                     if (abs(rij[k]) > 0.5 * L) {
                         if (rij[k] > 0)
                             rij[k] -= L;
@@ -172,7 +172,7 @@ void velocityVerlet(double dt) {
     for (int i = 0; i < N; i++) {
         for (int k = 0; k < 3; k++) {
             if(boundary == "bounded") {
-                // use periodic boundary conditions
+                // use bounded boundary conditions
                 if (r[i][k] < 0 || r[i][k] >= L) {
                     v[i][k] *= -1;
                     a[i][k] *= -1;
