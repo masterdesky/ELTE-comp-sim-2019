@@ -3,6 +3,7 @@
 #include <fstream>
 #include <iostream>
 #include <string>
+#include <vector>
 using namespace std;
 
 // simulation parameters
@@ -10,8 +11,14 @@ int N;                    // number of particles
 double rho;               // density (number per unit volume)
 double T;                 // temperature
 
+double boltzmann = 1.38e-23; // Boltzmann constant
+
 double **r, **v, **a;     // positions, velocities, accelerations
 std::string boundary;
+
+double Energy_current;    // Instantenous total energy
+double Virial = 0;        // Sum (r_ij * F_ij) in Virial
+bool potential;           // Add potential energy to total energy
 
 // function declarations
 
@@ -144,13 +151,25 @@ void computeAccelerations() {
             }
             double f = 24 * (2 * pow(rSqd, -7) - pow(rSqd, -4));
             for (int k = 0; k < 3; k++) {
-                 a[i][k] += rij[k] * f;
-                 a[j][k] -= rij[k] * f;
+                a[i][k] += rij[k] * f;
+                a[j][k] -= rij[k] * f;
+
+                if(potential) {
+                    if(i < j) {
+                        Virial += rij[k] * f;
+                    }
+                }
+            }
+
+            // Step with energy (+ potential energy)
+            if(potential) {
+                Energy_current += 4 * (pow(rSqd, -6) - pow(rSqd, -3));
             }
         }
 }
 
 void velocityVerlet(double dt) {
+    potential = false;
     computeAccelerations();
     for (int i = 0; i < N; i++) {
         for (int k = 0; k < 3; k++) {
@@ -165,12 +184,16 @@ void velocityVerlet(double dt) {
                     r[i][k] -= L;
                 }
             }
+
             v[i][k] += 0.5 * a[i][k] * dt;
         }
     }
+
+    potential = true;
     computeAccelerations();
     for (int i = 0; i < N; i++) {
         for (int k = 0; k < 3; k++) {
+
             if(boundary == "bounded") {
                 // use bounded boundary conditions
                 if (r[i][k] < 0 || r[i][k] >= L) {
@@ -178,7 +201,11 @@ void velocityVerlet(double dt) {
                     a[i][k] *= -1;
                 }
             }
+
             v[i][k] += 0.5 * a[i][k] * dt;
+
+            // Step with energy
+            Energy_current += v[i][k]*v[i][k] * 0.5;
         }
     }
 }
@@ -199,10 +226,14 @@ int main(int argc, char* argv[]) {
     rho = atof(argv[4]);            // Density (number per unit volume)
     T = atof(argv[5]);              // Temperature
 
+    std::vector<double> Energy;     // Total energy
+
     initialize();
     double dt = 0.01;
     ofstream file("..\\out\\md2.dat");
     for (int i = 0; i < n; i++) {
+
+        Energy_current = 0;
         velocityVerlet(dt);
         for(int j = 0; j < N; j++) {
             for(int k = 0; k < 3; k++) {
@@ -215,7 +246,32 @@ int main(int argc, char* argv[]) {
                 file << a[j][k] << '\t';
             }
         }
-        file << instantaneousTemperature() << '\n';
+        
+        double T_instant = instantaneousTemperature();
+
+        // Current energy
+        file << Energy_current << '\t';
+
+        Energy.push_back(Energy_current);
+
+        // C_v; molar heat capacity
+        double C_v = 0;
+        for(int j = 0; j < i; j++) {
+            C_v += ((Energy[j] * Energy[j])/i - (Energy[j]/i)*(Energy[j]/i));
+        }
+        C_v *= 1/(boltzmann * T_instant * T_instant);
+        file << C_v << '\t';
+
+        // PV
+        double PV = N * boltzmann * T_instant + 1/3 * Virial/i;
+        file << PV / pow(L, 3) << '\t';
+
+        // Z
+        double Z = PV / (N * boltzmann * T_instant);
+        file << Z << '\t';
+
+        // Temperature
+        file << T_instant << '\n';
         if (i % 200 == 0)
             rescaleVelocities();
     }

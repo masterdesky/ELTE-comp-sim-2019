@@ -1,0 +1,134 @@
+\selectlanguage{english}
+\begin{abstract}
+    \noindent A \emph{Számítógépes szimulációk} laboratórium negyedik alkalmával körüljártuk a termodinamika és a statisztikus fizika, azok által a fizikában képviselt szemléletmódját. Ez jelen esetben azt jelentette, hogy a szimulációkban nagyszámú, egymással kölcsönható részecske mikroszkopikus mozgását tanulmányoztuk, melynek segítségével a vizsgált rendszer egyes makroszkopikus tulajdonságait szerettünk volna feltérképezni. Ezek közé tartozott a rendszer egyensúlyi helyzetének vizsgálata, valamint az ilyen állapotban mérhető nyomás, a teljes energia, a kompresszibilitási faktor, valamint a hőkapacitás modellezése. Emellett megismerkedtünk a Verlet- és a Velocity--Verlet-algoritmusokkal, valamint azok korrekcióival, melyeket gyorsaságuk miatt előszeretettel alkalmaznak molekuladinamikai szimulációkban.
+\end{abstract}
+\selectlanguage{magyar}
+
+\begin{multicols}{2}
+
+\section{Bevezető} \label{sec:1}
+A labor negyedik alkalmával a molekuladinamika témakörével foglalkoztunk. Általánosítva olyan rendszereket vizsgáltunk, melyekben nagyszámú, egymással kölcsönható részecske található. A natív, eddig megismert integráló módszerekkel ezek megoldása a mai technológia számára még túl sok időt és elérhetlenül nagy számítási teljesítményt igényelne, így azok helyett másokat kell alkalmaznunk. \\
+A most újonnan tanult módszereket Loup Verlet, francia fizikus javasolta elhíresült papírjában (Verlet, 1967\cite{verlet1967computer}). Ezek - numerikus hibákat javító korrekciókkal ellátott verziói - akár tízszer gyorsabb sebességre képesek, kvázi ugyanolyan pontossággal, mint a Runge-Kutta függvények. Mivel egy nagy részecskeszámú rendszerben a legtöbb idő a részecskék közti erők kiszámítására fordítók, ezért a Verlet-féle algoritmusok ismerete és használata nagy segítséget nyújt minden, ilyen fajta szimulációban.
+
+\section{Feladatok} \label{sec:2}
+A kitűzött feladatokon történő munka megkezdése előtt meg kellett ismerkednünk az előzetesen kiadott három darab programkóddal. Ezek mindegyike egyedül a Velocity--Verlet-algoritmust implementálta, és a szimulációk során a továbbiakban is kizárólag én ezt az egy iteratív algoritmust használtam. Az egyes kódok a Velocity--Verlet-algoritmus újabb és újabb korrekcióival bővítik az előtte levőt, folyamatosan pontosítva és gyorsítva a molekuladinamikai szimuláció modellét. \\
+Fel kellett ismernünk, hogy kezdetben mindegyik szimuláció egy adatfile-t generál, melyben a minden egyes lépésben kiszámított pillanatnyi hőmérsékletek listája volt található. Ezek alapján azt kellett vizsgálunk, hogy azonos kezdőfeltételek mellett mennyi idő alatt relaxál a rendszer, annak egyensúlyi helyzetéhez. \\
+Következő feladatunk a Verlet-féle szomszádsági listával és a távoli potenciálok levágásával operáló korrekciót megvalósító, valamint az enélkül integráló módszerek futásidejnek összehasonlítása volt. Az általam vizsgált karakterisztika a potenciálok levágási határának, valamint a szomszédsági lista frissítési intervallumának módosítására történő futásidőbeli változásokat foglalta magába. Mind a korrekciókkal ellátott, mind pedig az azok nélküli iteratív módszereket teljesen azonos paraméterekkel futtattam, az egyes futások között folyamatosan változtatva a levágási hossz és a frissítési időköz nagyságát. Kellően sok párosítás segítségével kellően jól fel tudtam térképezni az kérdéses különbségeket. \\
+Utolsó előtti feladatként implementáltam a szimulált rendszer egyensúlyi pozíciójában mérhető nyomást, teljes energiát, kompresszibilitási faktort és hőkapacitást kiszámító függvényeket. \\
+Végezetül a feladat a programkódok olyan átalakítása volt számunkra, ami egy keményfalú rendszer képes szimulálni az addigi határfeltétel nélküli, vagy periódikus módszerek mellett. Emellett opcionálisan az előző feladatban szereplő háromtest szimulációt ábrázolni képest programot kellett írnunk a molekuladinamika feladatai között megadott kód segítségével. Ezt az utóbbi már az előző feladat esetén megvalósítottam (lásd YouTube\cite{yt}), a keményfalú rendszerek dinamikáját pedig legelső lépésben implementáltam mindegyik különböző módszerre. A fenti feladatokat is mind ezen zárt feltétel mellett vizsgáltam, többek között a nyomást is a falra kifejtett erőből számoltam.
+
+\section{Elméleti alapok} \label{sec:3}
+\subsection{Integráló módszerek} \label{sub:3.1}
+Mind a sima Verlet-, mind pedig a Velocity--Verlet-algoritmusoknak megvannak a saját előnyei és hátrányai. Míg a Verlet-módszer majdnem olyan pontos, mint a negyedrendű Runge-Kutta integrálás (a hiba alig $\mathscr{O} \left( \tau^{4} \right)$ nagyságrendű, a Runge-Kutta $\mathscr{O} \left( \tau^{5} \right)$ hibája mellett, ahol $\tau$ a lépéshossz), addig a léptető szabálya miatt - mely a következő:
+
+\begin{equation}
+    \vec{R}_{n + 1}
+    =
+    2 \vec{R}_{n} - \vec{R}_{n - 1} + \tau^{2} \vec{A}_{n} + \mathscr{O} \left( \tau^{4} \right)
+\end{equation}
+\begin{equation}
+    \vec{V}_{n}
+    =
+    \frac{\vec{R}_{n + 1} - \vec{R}_{n - 1}}{2 \tau} + \mathscr{O} \left( \tau^{2} \right)
+\end{equation}
+nem indítható egy tetszőleges kezdeti feltételből: a helykoordináták léptetése két előző pontot használ fel, így azokat a szimuláció elején már ismerni kell. Emellett $\vec{V}$-ben csak $\mathscr{O} \left( \tau^{2} \right)$ pontosságú. Ezzel ellentétben a Velocity--Verlet-algoritmus $\vec{R}$-ben és $\vec{V}$-ben egyaránt csak $\mathrm{O}\left( \tau^{3} \right)$ hibával rendelkezik, de cserébe indítható egy általunk választott kezdőpontból. Léptető szabálya a következő:
+
+\begin{equation}
+    \vec{R}_{n + 1}
+    =
+    \vec{R}_{n} + \tau \vec{V}_{n} + \frac{\tau^{2}}{2} \vec{A}_{n} + \mathscr{O} \left( \tau^{3} \right)
+\end{equation}
+\begin{equation}
+    \vec{V}_{n + 1}
+    =
+    \vec{V}_{n} + \frac{\tau}{2} \left( \vec{A}_{n + 1} + \vec{A}_{n} \right) + \mathscr{O} \left( \tau^{3} \right)
+\end{equation}
+Ha csak a koordináták pontosságát és az energiamegmaradást tartjuk fontosnak, akkor megoldást nyújthat a kettő kombinálása, ahol az első két pontot a Velocity--Verlet-módszerrel, onnantól kezdve pedig mindet a Verlet-algoritmussal határozzuk meg. Itt azonban most az egyszerűség kedvéért mindenhol a Velocity--Verlet-módszert alkalmaztam.
+
+\subsection{Lennard--Jones-potenciál} \label{sub:3.2}
+A szimulációban van der Waals-közelítést használunk, mely esetén az egyástól $r$ távolságra levő részecskék közti kölcsönhatást a Lennard--Jones-potenciál\cite{1924RSPSA.106..463J} írja le:
+
+\begin{equation}
+    V \left( r \right)
+    =
+    4 V_{0} \left[ \left( \frac{r_{0}}{r} \right)^{12} - \left( \frac{r_{0}}{r} \right)^{6} \right]
+\end{equation}
+Ennek alakja könnyen felírható. A potenciál képletében az $r^{-12}$ tag a Pauli-féle kicserélődési kölcsönhatás miatt fellépő faktor, mely rövid távolságokon érvényesül és nagyon erős taszító erőt fejt ki. Míg az $r^{-6}$ tag a nagyobb távolságokon fellépő van der Waals-erők miatt jön a képletbe, melyek itt vonzó erőt hoznak létre. Egy karakterisztikus $r_{m} = 2^{1/6} r_{0}$ pontban a függvény eléri a minimumát, a vonzó erő itt a legnagyobb. Innentől $r$-t csökkentve a vonzás szintén csökken, majd egy adott ponton eléri a nullát. Ha a részecskék tovább közelednek még ezután, akkor egy taszító erő lép fel, amely rendkívül gyorsan növekszik, és így a részecskéket ellöki egymástól. \\
+Maga az erőt, mellyel a léptetési szabályokban felhasznált $\vec{A}$ gyorsulásokat megadja, a potenciál gradienséből számíthatjuk legegyszerűbben:
+
+\begin{equation}
+    \vec{F} \left( \boldsymbol{r} \right)
+    =
+    - \boldsymbol{\nabla} V \left( r \right)
+    =
+    \frac{24 V_{0}}{r^{2}} \left[ 2 \left( \frac{r_{0}}{r} \right)^{12} - \left( \frac{r_{0}}{r} \right)^{6} \right] \boldsymbol{r}
+\end{equation}
+
+\subsection{Mért mennyiségek} \label{sub:3.3}
+Több különböző, a (\ref{sec:2}) részben már felsorolt mennyiség értékét kellett mérjük a szimuláció során. Hogy ezeket numerikusan vizsgálni tudjuk, javasolt volt számunkra úgy megválasztani az egyes összefüggésekben szereplő karakterisztikus mennyiségeket, hogy azok értékei mind $1$-et vegyenek fel. Így a következő mértéket választottam a feladatok megoldása során:
+
+\begin{equation}
+    V_{0} = r_{0} = m = 1
+\end{equation}
+Mivel a hőkapacitás kiszámításához szükségünk volt a teljes energia - közelítésben csak - időátlagára, ezért előbb az energiát kellett kiszámolnunk. A teljes energia egyszerűen felírható a Hamilton-függvény segítségével:
+
+\begin{equation}
+    \mathscr{H}
+    \equiv
+    E
+    =
+    \frac{m}{2} \sum_{i = 1}^{N} \boldsymbol{v}_{i}^{2}
+    +
+    \sum_{i \neq j} V \left( \left| \boldsymbol{r}_{i} - \boldsymbol{r}_{j} \right| \right)
+\end{equation}
+Ahol $V \left( \left| \boldsymbol{r}_{i} - \boldsymbol{r}_{j} \right| \right)$ az $i$ és $j$ indexű részecskék közti Lennard--Jones-potenciál, $\boldsymbol{v}_{i}$ pedig az $i$-edik részecske sebessége. \\
+Másodikként a moláris, konstans térfogaton mért hőkapacitást határoztam meg, melyet a gáz fundamentális egyenletéből kaphatunk a következő módon:
+
+\begin{equation}
+    C_{V}
+    =
+    \left( \frac{\partial E}{\partial T} \right)_{V}
+    =
+    \frac{1}{k_{B} T^{2}} \left[ \left< E^{2} \right> - \left< E \right>^{2} \right]
+\end{equation}
+Ahol $k_{B}$ a Boltzmann-állandó. Ezen fenti mennyiség mértékegysége $\frac{J}{K * mol}$, nagyságrendje standard körülmények között általában $10^{1} - 10^{2}$ között található\cite{thornton2012modern}. Az
+
+\begin{equation}
+    \left[ \left< E^{2} \right> - \left< E \right>^{2} \right]
+\end{equation}
+szórásban szereplő átlagokat időátlagokként közelítettem, ahogy az a feladat kiírásában is javasolva volt\cite{szamszim}. \\
+Végezetül a nyomást és a kompresszibilitási faktort a Viriál-tétel segítségével mértem, melyből felírható az alábbi összefüggés:
+
+\begin{equation}
+    PV
+    =
+    N k_{B} T
+    +
+    \frac{1}{3} \left< \sum_{i < j} r_{ij} * F_{ij} \right>
+\end{equation}
+Melyből a kompresszibilitási faktor:
+
+\begin{equation}
+    Z = \frac{PV}{N k_{B} T}
+\end{equation}
+Mely utóbbinak értéke ideális gázra $Z = 1$, míg nagy sűrűségű közegre $Z > 1$, kis sűrűség esetén pedig $Z < 1$.
+
+\section{Megvalósítás} \label{sec:4}
+Előzetesen az (\ref{sec:2})-es pontban már tisztázott funkcionalitású, \texttt{C++} nyelven írt molekuladinamikai szimulációt megvalósító keretrendszerek voltak számunkra megadva, melyeket szintén a (\ref{sec:2})-es pontban ismertetett szempontok alapján, nekünk kellett bővítenünk. \\
+A forráskódot az eddigiekhez hasonlóan egy saját batch file segítségével, benne a \texttt{clang} fordító felhasználásával fordítottam. Az eredeti kód módosításával elértem, hogy a lefordított \texttt{exe} program egy Jupyter Notebook-ban futó Python 3 kernel segítségével induljon. A szimuláció a kezdőfeltételeket szintén ebből a környezetből várja, bemenő paraméterek formájában. \\
+Az eredeti integritást meghagyva, a három különböző szinten megvalósított MD szimuláció három \texttt{main} forrásfile alapján fordul. Az egyes lefordított \texttt{exe}-ket a kezdőfeltételek mellett megadott másik bementei paraméter segítségével lehet tetszőlegesen keményfalú, periodikus, vagy határfeltétel nélküli módokban lefuttatni. Ezek kimenete minden szimuláció esetében egy-egy \texttt{.dat} file, melyek minden sora egy-egy szimulációs lépésnek felel meg. Egy sor minden esetben tartalmazza az összes szimulált részecske 3 térkoordinátáját, az azokhoz tartozó sebesség- és gyorsuláskomponenseket, valamint sorrendben az összes többi vizsgálandó mennyiséget az adott lépés esetére. Ezek pontos sorrendjéért lásd a programkódot GitHub-on\cite{github}. \\
+Az előző szimulációkhoz hasonlóan, most is készítettem néhány animációt a szimulált folyamatokról. Szintén az előzőekhez hasonlóan, ezt most is Pythonban valósítottam meg egy saját kód segítségével, ami a \texttt{matplotlib} és a \texttt{imageio} könytárakat használva generál megadott paraméterek alapján \texttt{mp4} formátumú, kis méretű, de nagy felbontású videókat. Viszont ellentétben az eddigiekkel, most minden részfeladatról animációt készítettem, amik válogatva a YouTube-on megtekinthetőek\cite{yt}. \\
+A végleges forráskódok és a programokat futtató Notebook file szintén mind elérhető GitHub-on\cite{github}.
+
+\section{Kiértékelés} \label{sec:5}
+
+\section{Futásidő} \label{sec:6}
+
+{\centering\includegraphics[width=0.5\textwidth]{}}
+\captionof{figure}{Placeholder}
+\hfill \break \break
+
+
+\section{Diszkusszió} \label{sec:7}
+
+\end{multicols}
