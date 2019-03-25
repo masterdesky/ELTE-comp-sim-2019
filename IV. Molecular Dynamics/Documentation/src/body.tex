@@ -44,6 +44,51 @@ nem indítható egy tetszőleges kezdeti feltételből: a helykoordináták lép
     \vec{V}_{n} + \frac{\tau}{2} \left( \vec{A}_{n + 1} + \vec{A}_{n} \right) + \mathscr{O} \left( \tau^{3} \right)
 \end{equation}
 Ha csak a koordináták pontosságát és az energiamegmaradást tartjuk fontosnak, akkor megoldást nyújthat a kettő kombinálása, ahol az első két pontot a Velocity--Verlet-módszerrel, onnantól kezdve pedig mindet a Verlet-algoritmussal határozzuk meg. Itt azonban most az egyszerűség kedvéért mindenhol a Velocity--Verlet-módszert alkalmaztam.
+\\ \\
+A szimuláció 3 különböző módon van megvalósítva, mindegyik mód az előtte levőnek egy bővített verziója. A legelső, \texttt{md1} indexű megvalósítás a legalaővetőbb Velocity--Verlet-algoritmust tartalmazza, mely a kezdeti sebességeket random módon választja meg, és a fent tárgyalt léptető szabállyal propagál. Emellett implementálva van itt is, valamint a másik két verzióban is, egy szabályozó alfüggvény is, mely 200 lépésenként ellenőrzi a sebességeket, és ha az azok segítségével, az ekvipartíció tételéből származtatott hőmérséklet nem felel meg a folyamatosan mért pillanatnyi hőmérsékletnek, újraskálázza őket. Ez az a lépés, aminek segítségével a szimuláció erőltetetten propagál az egyensúlyi állapot felé. Ez a mért mennyiségek grafikonján éles törések formájában jelenik meg. Emellett a részecskék mozgásáról készült animáción is drasztikusan szembetűnő az első újraskálázás hatására történő hirtelen sebességcsökkenés\cite{yt}.
+\\ \\
+A második, \texttt{md2}-vel jelzett szimulációban a kezdősebességeket már a Maxwell--Boltzmann-sebességeloszlás alapján választjuk, mely 3D-ben egyszerűen a Gauss-eloszlás:
+
+\begin{equation}
+    P \left( v \right)
+    =
+    \left( \frac{m}{2 \pi k_{B} T} \right)^{\frac{3}{2}}
+    *
+    e^{- \tfrac{m \left( v_{x}^{2} + v_{y}^{2} + v_{z}^{2} \right)}{2 k_{B} T}}
+\end{equation}
+Ahogy a gyakorlat leírásában is szerepel\cite{szamszim}, hogy ezt a szimulációs kód a \textit{Numerical Recipies}-ből átvett \texttt{gasdev()} függvény segítségével valósítja meg, mely $1$ szórású véletlen számokat generál a Box--Müller-algoritmus felhasználásával\cite{press2007numerical}. Sajnos ez az algoritmus nem tökéletes, a kezdősebességek átlaga - tehát a tömegközéppont sebessége - nem 0. Hogy valóban Gauss-eloszlású sebességeket kapjunk, ahol ez a feltétel igaz, korrigálnunk kell a hibát. Előbb a tömegközéppont sebességét vonjuk le belőlük:
+
+\begin{equation}
+    \boldsymbol{v}_{i}
+    \to
+    \boldsymbol{v}_{i} - \boldsymbol{v}_{\text{TKP}}
+\end{equation}
+Majd az így kapott új $\boldsymbol{v}_{i}$ sebességeket egy konstans szorzással, létrehozzuk a kívánt, inicializáláskor megadott $T$ hőmérsékletet:
+
+\begin{equation}
+    \boldsymbol{v}_{i}
+    \to
+    \lambda \boldsymbol{v}_{i}
+\end{equation}
+Ahol a konstans szorzó:
+
+\begin{equation}
+    \lambda
+    =
+    \sqrt{\frac{2 \left( N - 1 \right) k_{B} T}{\sum_{i = 1}^{N} m \boldsymbol{v}_{i}^{2}}}
+\end{equation}
+Ahol az eddigiekben a gyakorlat leírásában is használt formalizmust és jelölést alkalmaztam\cite{szamszim}.
+\\ \\
+A harmadik \texttt{md3} indexxel jelölt szimuláció a - majdnem - teljes Velocity--Verlet-algoritmust tartalmazza, melyben már a Verlet által javasolt \textit{szomszédsági lista} is implementálva van, valamint a potenciálok \textit{levágási határa} is értelmezett. Az utóbbi azt a közelítést hozza be a szimulációba, miszerint nagyobb távolságokon a részecskék közti kölcsönhatás elhanyagolhatóan apró. Így ahelyett, hogy a legtávolabbi részecskék közti hatást is kiszámolnánk, minden részecskére csak egy adott \texttt{rCutOff} sugarú gömbön belüli hatásokkal foglalkozunk. Hogy ezeket ne kelljen minden alkalommal keresgélni, létrehozunk egy szomszédsági listát, mely minden részecskére egy adott \texttt{rMax} sugarú gömbön belül található részecske szomszédokat tartja nyilván. Ilyen esetben ha ki akarjuk számítani egy lépésben az egyik 
+részecskére ható erőket, akkor egyszerűen csak a szomszédsági listán kell az iterációt elvégeznünk az összes helyett. \\
+Ezt a listát \texttt{updateInterval} lépésenként frissítjük. Verlet másik közelítése alapján azért nem kell ezt a frissítést minden lépésben megtennünk, mert a részecskék sebessége véges. Ha megfelelően választjuk meg \texttt{rMax} és \texttt{rCutOff} értékeit, akkor \texttt{updateInterval} lépésen belül azok helyzete ne változik annyira me, hogy ez bármennyire is befolyással legyen a szimuláció pontosságára. Verlet javaslata alapján a fent tárgyalt paraméterek értékeit a következőképp kell megválasztanunk:
+
+\begin{align*}
+    &\text{\texttt{rCutOff}} = 2.5 r_{0} \\
+    &\text{\texttt{rMax}} = 3.2 r_{0} \\
+    &\text{\texttt{updateInterval}} = 10
+\end{align*}
+Az ezekben megjelenő $r_{0}$ jelentését és értékét a következő két részben tárgyalom.
 
 \subsection{Lennard--Jones-potenciál} \label{sub:3.2}
 A szimulációban van der Waals-közelítést használunk, mely esetén az egyástól $r$ távolságra levő részecskék közti kölcsönhatást a Lennard--Jones-potenciál\cite{1924RSPSA.106..463J} írja le:
@@ -53,7 +98,7 @@ A szimulációban van der Waals-közelítést használunk, mely esetén az egyá
     =
     4 V_{0} \left[ \left( \frac{r_{0}}{r} \right)^{12} - \left( \frac{r_{0}}{r} \right)^{6} \right]
 \end{equation}
-Ennek alakja könnyen felírható. A potenciál képletében az $r^{-12}$ tag a Pauli-féle kicserélődési kölcsönhatás miatt fellépő faktor, mely rövid távolságokon érvényesül és nagyon erős taszító erőt fejt ki. Míg az $r^{-6}$ tag a nagyobb távolságokon fellépő van der Waals-erők miatt jön a képletbe, melyek itt vonzó erőt hoznak létre. Egy karakterisztikus $r_{m} = 2^{1/6} r_{0}$ pontban a függvény eléri a minimumát, a vonzó erő itt a legnagyobb. Innentől $r$-t csökkentve a vonzás szintén csökken, majd egy adott ponton eléri a nullát. Ha a részecskék tovább közelednek még ezután, akkor egy taszító erő lép fel, amely rendkívül gyorsan növekszik, és így a részecskéket ellöki egymástól. \\
+Ennek alakja könnyen megmagyarázható. A potenciál képletében az $r^{-12}$ tag a Pauli-féle kicserélődési kölcsönhatás miatt fellépő faktor, mely rövid távolságokon érvényesül és nagyon erős taszító erőt fejt ki. Míg az $r^{-6}$ tag a nagyobb távolságokon fellépő van der Waals-erők miatt jön a képletbe, melyek itt vonzó erőt hoznak létre. Egy karakterisztikus $r_{m} = 2^{1/6} r_{0}$ pontban a függvény eléri a minimumát, a vonzó erő itt a legnagyobb. Innentől $r$-t csökkentve a vonzás szintén csökken, majd egy adott ponton eléri a nullát. Ha a részecskék tovább közelednek még ezután, akkor egy taszító erő lép fel, amely rendkívül gyorsan növekszik, és így a részecskéket ellöki egymástól. \\
 Maga az erőt, mellyel a léptetési szabályokban felhasznált $\vec{A}$ gyorsulásokat megadja, a potenciál gradienséből számíthatjuk legegyszerűbben:
 
 \begin{equation}
@@ -123,11 +168,7 @@ A végleges forráskódok és a programokat futtató Notebook file szintén mind
 \section{Kiértékelés} \label{sec:5}
 
 \section{Futásidő} \label{sec:6}
-
-{\centering\includegraphics[width=0.5\textwidth]{}}
-\captionof{figure}{Placeholder}
-\hfill \break \break
-
+Az \texttt{md3} indexxel jelzett programban több bemeneti paramétert válatoztatva térképeztem fel a szimuláció futásidejét. Ezek a paraméterek az \texttt{rCutOff} a - (\ref{sub:3.1})-es részben tárgyalt - potenciálok levágási távolsága, \texttt{rMax} a szomszédsági lista nyilvántartási távolsága, valamint az \texttt{updateInterval}, a szomszédsági lista frissítései közt eltelt intervallum voltak.
 
 \section{Diszkusszió} \label{sec:7}
 
