@@ -130,7 +130,7 @@ void computeAccelerations() {
 
                 if(potential) {
                     if(i < j) {
-                        Virial += drPair[p][d] * f;
+                        Virial += abs(drPair[p][d]) * f;
                     }
                 }
             }
@@ -285,9 +285,6 @@ int main(int argc, char* argv[]) {
     rMax = atof(argv[7]);           // Maximum separation to include in pair list
     updateInterval = atoi(argv[8]); // Number of time steps between updates of pair list
 
-    double Energy = 0;              // Total energy
-    double Energy2 = 0;             // Square of total energy
-
     initialize();
     updatePairList();
     updatePairSeparations();
@@ -298,6 +295,7 @@ int main(int argc, char* argv[]) {
     for (int i = 0; i < n; i++) {
 
         Energy_current = 0;
+        Virial = 0;
         velocityVerlet(dt);
         for(int j = 0; j < N; j++) {
             for(int k = 0; k < 3; k++) {
@@ -311,35 +309,14 @@ int main(int argc, char* argv[]) {
             }
         }
 
-        double T_instant = instantaneousTemperature();
-
         // Current energy
         file << Energy_current << '\t';
 
-        Energy += Energy_current;
-        Energy2 += Energy_current*Energy_current;
-
-        // Average energy
-        file << Energy/(i+1) << '\t';
-
-        // Oscillation of energy
-        double dE2 = ((Energy2)/(i+1) - (Energy/(i+1))*(Energy/(i+1)));
-        file << dE2 << '\t';
-
-        // C_v; molar heat capacity
-        double C_v = 1/(boltzmann * T_instant * T_instant) * dE2;
-        file << C_v << '\t';
-
-        // PV
-        double PV = N * boltzmann * T_instant + 1/3 * Virial/(i+1);
-        file << PV / pow(L, 3) << '\t';
-
-        // Z
-        double Z = PV / (N * boltzmann * T_instant);
-        file << Z << '\t';
+        // Virial
+        file << Virial << '\t';
 
         // Temperature
-        file << T_instant << '\n';
+        file << instantaneousTemperature() << '\n';
 
         if (i % 200 == 0)
             rescaleVelocities();

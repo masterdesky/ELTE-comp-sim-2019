@@ -6,7 +6,7 @@
 #include <vector>
 using namespace std;
 
-const int N;                // Number of particles
+int N;                      // Number of particles
 //double r[N][3];           // Positions
 //double v[N][3];           // Velocities
 //double a[N][3];           // Accelerations
@@ -99,7 +99,7 @@ void computeAccelerations() {
 
                 if(potential) {
                     if(i < j) {
-                        Virial += rij[k] * f;
+                        Virial += abs(rij[k]) * f;
                     }
                 }
             }
@@ -170,15 +170,13 @@ int main(int argc, char* argv[]) {
     N = atoi(argv[3]);              // Number of particles
     T = atoi(argv[4]);              // Temperature
 
-    double Energy = 0;              // Total energy
-    double Energy2 = 0;             // Square of total energy
-
     initialize();
     double dt = 0.01;
     ofstream file("..\\out\\md1.dat");
     for (int i = 0; i < n; i++) {
 
         Energy_current = 0;
+        Virial = 0;
         velocityVerlet(dt);
         for(int j = 0; j < N; j++) {
             for(int k = 0; k < 3; k++) {
@@ -192,35 +190,14 @@ int main(int argc, char* argv[]) {
             }
         }
 
-        double T_instant = instantaneousTemperature();
-
-        // E; current energy
+        // Current energy
         file << Energy_current << '\t';
 
-        Energy += Energy_current;
-        Energy2 += Energy_current*Energy_current;
-
-        // Average energy
-        file << Energy/(i+1) << '\t';
-
-        // Oscillation of energy
-        double dE2 = ((Energy2)/(i+1) - (Energy/(i+1))*(Energy/(i+1)));
-        file << dE2 << '\t';
-
-        // C_v; molar heat capacity
-        double C_v = 1/(boltzmann * T_instant * T_instant) * dE2;
-        file << C_v << '\t';
-
-        // PV
-        double PV = N * boltzmann * T_instant + 1/3 * Virial/(i+1);
-        file << PV / pow(L, 3) << '\t';
-
-        // Z
-        double Z = PV / (N * boltzmann * T_instant);
-        file << Z << '\t';
+        // Virial
+        file << Virial << '\t';
 
         // Temperature
-        file << T_instant << '\n';
+        file << instantaneousTemperature() << '\n';
 
         if (i % 200 == 0)
             rescaleVelocities();
