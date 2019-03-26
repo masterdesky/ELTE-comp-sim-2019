@@ -6,23 +6,39 @@
 \captionof{figure}{Pillanatnyi hőmérsékletek zárt rendszerben, $N = 64$ részecske esetén} \label{fig:1}
 \hfill \break \break
 {\centering\includegraphics[width=\textwidth]{images/total_energy.pdf}}
-\captionof{figure}{A zárt rendszerben teljes energiája $N = 64$ részecske esetén} \label{fig:2}
+\captionof{figure}{A zárt rendszer teljes energiája $N = 64$ részecske esetén} \label{fig:2}
 \hfill \break \break
-{\centering\includegraphics[width=\textwidth]{images/heat_capacity.pdf}}
-\captionof{figure}{A zárt rendszerben mért moláris hőkapacitás $N = 64$ részecske esetén} \label{fig:3}
+{\centering\includegraphics[width=\textwidth]{images/energy_diff.pdf}}
+\captionof{figure}{A mérthető energia időátlaga ($\left< E \right>$) $N = 64$ részecske esetén} \label{fig:3}
 \hfill \break \break
-{\centering\includegraphics[width=\textwidth]{images/P.pdf}}
-\captionof{figure}{A zárt rendszer nyomása $N = 64$ részecske esetén} \label{fig:4}
+{\centering\includegraphics[width=\textwidth]{images/energy_oscill.pdf}}
+\captionof{figure}{Az energia oszcillációja ($\left< E^{2} \right> - \left< E \right>^{2}$) $N = 64$ részecske esetén} \label{fig:4}
 
 \newpage
 
+{\centering\includegraphics[width=\textwidth]{images/heat_capacity.pdf}}
+\captionof{figure}{A zárt rendszerben mért moláris hőkapacitás $N = 64$ részecske esetén} \label{fig:5}
+\hfill \break \break
+{\centering\includegraphics[width=\textwidth]{images/P.pdf}}
+\captionof{figure}{A zárt rendszer nyomása $N = 64$ részecske esetén} \label{fig:6}
+\hfill \break \break
 {\centering\includegraphics[width=\textwidth]{images/Z.pdf}}
-\captionof{figure}{A zárt rendszer kompressziós együtthatója $N = 64$ részecske esetén} \label{fig:5}
+\captionof{figure}{A zárt rendszer kompressziós együtthatója $N = 64$ részecske esetén} \label{fig:7}
 
 \newpage
 
 \subsection*{A.1.2\ \ Futásidők}
 
 {\centering\includegraphics[width=\textwidth]{images/runtime_full_md3.pdf}}
-\captionof{figure}{A futásidők teljes 4D terének 3D projekciói. Az azonos szimulációk mindhárom képen azonos színekkel vannak jelölve.\\Bal szélső ábra: Az egyes szimulációk futásideje az \texttt{rMax} és az \texttt{updateInterval} függvényében\\Középső ábra: A futásidők az \texttt{rCutOff} és \texttt{updateInterval} függvényében\\Jobb szélső ábra: A futásidők az \texttt{rCutOff} és \texttt{rMax} függvényében}
+\captionof{figure}{A futásidők teljes 4D terének 3D projekciói. Az azonos szimulációk mindhárom képen azonos színekkel vannak jelölve.\\Bal szélső ábra: Az egyes szimulációk futásideje az \texttt{rMax} és az \texttt{updateInterval} függvényében\\Középső ábra: A futásidők az \texttt{rCutOff} és \texttt{updateInterval} függvényében\\Jobb szélső ábra: A futásidők az \texttt{rCutOff} és \texttt{rMax} függvényében} \label{fig:8}
+
 \hfill \break \break
+
+{\centering\includegraphics[width=\textwidth]{images/runtime_rmax_update_md3.pdf}}
+\captionof{figure}{A futásidők első további 2D projekciói. Itt azok az \texttt{rMax} és \texttt{updateInterval} paraméterek függvényében vannak ábrázolva.} \label{fig:9}
+\hfill \break \break
+{\centering\includegraphics[width=\textwidth]{images/runtime_rcutoff_update_md3.pdf}}
+\captionof{figure}{A futásidők második további 2D projekciói. Itt azok az \texttt{rCutOff} és \texttt{updateInterval} paraméterek függvényében vannak ábrázolva.} \label{fig:10}
+\hfill \break \break
+{\centering\includegraphics[width=\textwidth]{images/runtime_rcutoff_rmax_md3.pdf}}
+\captionof{figure}{A futásidők harmadik további 2D projekciói. Itt azok az \texttt{rCutOff} és \texttt{rMax} paraméterek függvényében vannak ábrázolva.} \label{fig:11}

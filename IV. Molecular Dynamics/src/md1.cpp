@@ -6,11 +6,13 @@
 #include <vector>
 using namespace std;
 
-const int N = 64;         // Number of particles
-double r[N][3];           // Positions
-double v[N][3];           // Velocities
-double a[N][3];           // Accelerations
-double T;                 // Temperature
+const int N;                // Number of particles
+//double r[N][3];           // Positions
+//double v[N][3];           // Velocities
+//double a[N][3];           // Accelerations
+double T;                   // Temperature
+
+double **r, **v, **a;     // positions, velocities, accelerations
 
 double L = 10;            // Linear size of cubical volume
 double vMax = 0.1;        // Maximum initial velocity component
@@ -24,6 +26,15 @@ bool potential;           // Add potential energy to total energy
 std::string boundary;
 
 void initialize() {
+
+    r = new double* [N];
+    v = new double* [N];
+    a = new double* [N];
+    for (int i = 0; i < N; i++) {
+        r[i] = new double [3];
+        v[i] = new double [3];
+        a[i] = new double [3];
+    }
 
     // initialize positions
     int n = int(ceil(pow(N, 1.0/3)));  // number of atoms in each direction
@@ -156,9 +167,11 @@ int main(int argc, char* argv[]) {
     
     boundary = argv[1];             // Mode for boundary conditions
     int n = atoi(argv[2]);          // Number of steps
-    T = atoi(argv[3]);              // Temperature
+    N = atoi(argv[3]);              // Number of particles
+    T = atoi(argv[4]);              // Temperature
 
-    std::vector<double> Energy;     // Total energy
+    double Energy = 0;              // Total energy
+    double Energy2 = 0;             // Square of total energy
 
     initialize();
     double dt = 0.01;
@@ -184,18 +197,22 @@ int main(int argc, char* argv[]) {
         // E; current energy
         file << Energy_current << '\t';
 
-        Energy.push_back(Energy_current);
+        Energy += Energy_current;
+        Energy2 += Energy_current*Energy_current;
+
+        // Average energy
+        file << Energy/(i+1) << '\t';
+
+        // Oscillation of energy
+        double dE2 = ((Energy2)/(i+1) - (Energy/(i+1))*(Energy/(i+1)));
+        file << dE2 << '\t';
 
         // C_v; molar heat capacity
-        double C_v = 0;
-        for(int j = 0; j < i; j++) {
-            C_v += ((Energy[j] * Energy[j])/i - (Energy[j]/i)*(Energy[j]/i));
-        }
-        C_v *= 1/(boltzmann * T_instant * T_instant);
+        double C_v = 1/(boltzmann * T_instant * T_instant) * dE2;
         file << C_v << '\t';
 
         // PV
-        double PV = N * boltzmann * T_instant + 1/3 * Virial/i;
+        double PV = N * boltzmann * T_instant + 1/3 * Virial/(i+1);
         file << PV / pow(L, 3) << '\t';
 
         // Z

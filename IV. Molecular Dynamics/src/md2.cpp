@@ -226,7 +226,8 @@ int main(int argc, char* argv[]) {
     rho = atof(argv[4]);            // Density (number per unit volume)
     T = atof(argv[5]);              // Temperature
 
-    std::vector<double> Energy;     // Total energy
+    double Energy = 0;              // Total energy
+    double Energy2 = 0;             // Square of total energy
 
     initialize();
     double dt = 0.01;
@@ -252,18 +253,22 @@ int main(int argc, char* argv[]) {
         // Current energy
         file << Energy_current << '\t';
 
-        Energy.push_back(Energy_current);
+        Energy += Energy_current;
+        Energy2 += Energy_current*Energy_current;
+
+        // Average energy
+        file << Energy/(i+1) << '\t';
+
+        // Oscillation of energy
+        double dE2 = ((Energy2)/(i+1) - (Energy/(i+1))*(Energy/(i+1)));
+        file << dE2 << '\t';
 
         // C_v; molar heat capacity
-        double C_v = 0;
-        for(int j = 0; j < i; j++) {
-            C_v += ((Energy[j] * Energy[j])/i - (Energy[j]/i)*(Energy[j]/i));
-        }
-        C_v *= 1/(boltzmann * T_instant * T_instant);
+        double C_v = 1/(boltzmann * T_instant * T_instant) * dE2;
         file << C_v << '\t';
 
         // PV
-        double PV = N * boltzmann * T_instant + 1/3 * Virial/i;
+        double PV = N * boltzmann * T_instant + 1/3 * Virial/(i+1);
         file << PV / pow(L, 3) << '\t';
 
         // Z
