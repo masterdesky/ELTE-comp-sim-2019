@@ -20,7 +20,7 @@ double vMax = 0.1;        // Maximum initial velocity component
 double boltzmann = 1.38e-23; // Boltzmann constant
 
 double Energy_current;    // Instantenous total energy
-double Virial = 0;        // Sum (r_ij * F_ij) in Virial
+double Virial;            // Sum (r_ij * F_ij) in Virial
 bool potential;           // Add potential energy to total energy
 
 std::string boundary;

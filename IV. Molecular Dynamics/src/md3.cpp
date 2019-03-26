@@ -18,7 +18,7 @@ double **r, **v, **a;     // Positions, velocities, accelerations
 std::string boundary;
 
 double Energy_current;    // Instantenous total energy
-double Virial = 0;        // Sum (r_ij * F_ij) in Virial
+double Virial;            // Sum (r_ij * F_ij) in Virial
 bool potential = false;   // Add potential energy to total energy
 
 // Declare some functions
@@ -276,7 +276,7 @@ double instantaneousTemperature() {
 
 int main(int argc, char* argv[]) {
 
-    boundary = argv[1];             // Modes for system-boundary
+    boundary = argv[1];             // Mode for boundary conditions
     int n = atoi(argv[2]);          // Number of steps
     N = atoi(argv[3]);              // Number of particles
     rho = atof(argv[4]);            // Density (number per unit volume)
