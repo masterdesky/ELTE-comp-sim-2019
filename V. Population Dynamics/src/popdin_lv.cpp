@@ -7,16 +7,15 @@
 #include "vector.hpp"
 #include "odeint.hpp"
 
-static double n_0_1;                        // Starting number of first population
-static double n_0_2;                        // Starting number of second population
-static double k_1;                          // Maximal number of first population
-static double k_2;                          // Maximal number of second population
-static double w_out_1;                      // Dying rate of first population
-static double w_in_1;                       // Birth rate of first population
-static double w_out_2;                      // Dying rate of second population
-static double w_in_2;                       // Birth rate of second population
-static double alpha;                        // Suppression rate of second population on the first
-static double beta;                         // Suppression rate of first population on the second
+static double n_0_r;                        // Starting number of rabbit population
+static double n_0_f;                        // Starting number of fox population
+static double k;                            // Maximal number of first population
+static double s;                            // Parameter for overflowing
+static double a;                            // Parameter for birth rate of rabbit population
+static double b;                            // Parameter for dying rate of rabbit population
+static double c;                            // Parameter for birth rate of fox population
+static double d;                            // Parameter for dying rate of fox population
+
 
 static double sim_time;                     // Simulated time [units]
 static double dt;                           // Step size [units]
@@ -28,12 +27,12 @@ std::string odeint;                         // ODE integration method
 //  Derivative vector for Newton's law of gravitation
 cpl::Vector derivates(const cpl::Vector& x) {
 
-    double t = x[0], n_1 = x[1], n_2 = x[2];
+    double t = x[0], n_r = x[1], n_f = x[2];
 
     cpl::Vector f(3);
     f[0] = 1;
-    f[1] = (-w_out_1 + w_in_1) * n_1 * (1 - (n_1 + alpha*n_2)/k_1);
-    f[2] = (-w_out_2 + w_in_2) * n_2 * (1 - (n_2 + beta*n_1)/k_2);
+    f[1] = a * (1 - n_r/k) * n_r - b * (n_r * n_f / (1 + n_r * s));
+    f[2] = c * (n_r * n_f / (1 + n_r * s)) - d * n_f;
 
     return f;
 }
@@ -45,25 +44,23 @@ int main(int argc, char* argv[]) {
     std::string fixed_or_not = argv[1];         // Fixed or adaptive
     odeint = argv[2];                           // ODE integration method
 
-    n_0_1 = atof(argv[3]);                      // Starting number of first population
-    n_0_2 = atof(argv[4]);                      // Starting number of second population
-    k_1 = atof(argv[5]);                        // Maximal number of first population
-    k_2 = atof(argv[6]);                        // Maximal number of second population
-    w_out_1 = atof(argv[7]);                    // Dying rate of first population
-    w_in_1 = atof(argv[8]);                     // Birth rate of first population
-    w_out_2 = atof(argv[9]);                    // Dying rate of second population
-    w_in_2 = atof(argv[10]);                    // Birth rate of second population
-    alpha = atof(argv[11]);                     // Suppression rate of second population on the first
-    beta = atof(argv[12]);                      // Suppression rate of first population on the second
+    n_0_r = atof(argv[3]);                      // Starting number of rabbit population
+    n_0_f = atof(argv[4]);                      // Starting number of fox population
+    k = atof(argv[5]);                          // Maximal number of first population
+    s = atof(argv[6]);                          // Parameter for overflowing
+    a = atof(argv[7]);                          // Parameter for birth rate of rabbit population
+    b = atof(argv[8]);                          // Parameter for dying rate of rabbit population
+    c = atof(argv[9]);                          // Parameter for birth rate of fox population
+    d = atof(argv[10]);                         // Parameter for dying rate of fox population
 
-    sim_time = atof(argv[13]);                  // Simulated time [units]
-    dt = atof(argv[14]);                        // Step size [units]
-    accuracy = atof(argv[15]);                  // Adaptive accuracy of simulation
+    sim_time = atof(argv[11]);                  // Simulated time [units]
+    dt = atof(argv[12]);                        // Step size [units]
+    accuracy = atof(argv[13]);                  // Adaptive accuracy of simulation
 
     //  Initial parameters
     //  x0[0]: time; x0[1]: starting population of first animal; x0[2]: starting population of second animal
     cpl::Vector x0(3);
-    x0[0] = 0;  x0[1] = n_0_1;  x0[2] = n_0_2;
+    x0[0] = 0;  x0[1] = n_0_r;  x0[2] = n_0_f;
 
     //  Changing variables
     std::ofstream dataFile;     // Datafile for outputs

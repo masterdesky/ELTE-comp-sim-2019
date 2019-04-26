@@ -1,0 +1,156 @@
+\selectlanguage{english}
+\begin{abstract}
+    \noindent A \emph{Számítógépes szimulációk} laboratórium ötödik alkalmával egy, a fizika területén kívül eső témával foglalkoztunk, mely inkább a biológia tudományának részét képezi. Ez a téma a populációdinamika volt, mely az egyes állat-, esetlegesen emberpopulációk időbeli változásával, valamint a környezettel és más fajokkal való kölcsönhatásával foglalkozik. A téma azért szerzett létjogosultságot magának a tárgy anyagába történő bekerüléséhez, mert az ilyesfajta időbeli változásokat legjobban numerikus differenciálegyenlet megoldásokkal modellezhetjük. A feladatok során megvizsgáltuk a logisztikus-, a csatolt-logisztikus-, valamint a Lotka--Volterra-modellt is, melyek a legalapvetőbb populációdinamikai algoritmusoknak számítanak.
+\end{abstract}
+\selectlanguage{magyar}
+
+\begin{multicols}{2}
+
+\section{Bevezető} \label{sec:1}
+A labor ötödik gyakorlatán a populációdinamika témakörével foglalkoztunk. A téma kitűzésének motivációja, hogy bemutassa, a fizikán kívül más témakörökben is hasznos (és egyáltalán lehetséges) a differenciálegyenletek numerikus megoldásával foglalkozni. Fontos természetesen megemlíteni, hogy az ezekből kapott modellek és adatok csak a valóság egy közelítésének felelnek meg, mely leginkább az összefüggések és markánsabb karakterisztikák elemzésére alkalmasak. Ennek oka, hogy az ilyen események erősen sztochasztikus, erősen nem-lineáris jellegűek, így az itt tárgyalt megközelítések nem alkalmazhatóak pontos vizsgálatokra. Azonban céljuk nem is ez, hanem az előbb már említettek: a lényegi motívumok feltérképezése. \\
+A használt modellek - ahogy a gyakorlat leírása is fogalmaz - egy általános keretrendszernek tekinthetőek, melybe nem csak a populációdinamika konkrét problémái, hanem teljesen másfajta jelenségek is beilleszhetőek. Ilyen esetekben a hasonló alakú egyenletek, szintén hasonló karakterisztikájú dinamikát jeleznek előre, legyen szó akár kémiai, akár gazdasági problémáról\cite{szamszim}. A jelenlegi jegyzőkönyvben egy ilyen keretrendszer megteremtéséhez használható modelleket fogunk vizsgálni.
+
+\section{Feladatok} \label{sec:2}
+A gyakorlat során az eddigiekben minden feladat mellé egy, az alapokat tartalmazó példakódot kaptunk. Ez az első téma, ahol ilyen nem áll rendelkezésünkre, így minden szükséges forráskódot magunknak kell megírnunk. Természetesen az eddigi kódok használata nem tiltott, ezeket fel is használtam a szimuláció programkódjának megírásához. \\
+A feladatok során a populációdinamikában is ismert logisztikus-, csatolt-logisztikus-, valamint Lotka--Volterra-modelleket kellett vizsgálnunk. \\
+Ezek közül az első említettel kapcsolatban a fixpontok körüli viselkedést kellett elemeznünk, pontosabban, hogy mennyire adja vissza az analitikus eredményt a fixponttól vett távolság függvényében. A kérdéses viselkedést mind az Euler-, mind pedig a Runge--Kutta-módszerek esetében meg kellett vizsgáljuk. Végül a gyakorlat leírásában található ábrákat kellett megfelelő paraméterek megválasztásával reprodukálnunk. \\
+A csatolt-logisztikus-modell esetében be kellett bizonyítanunk a \emph{kompetitív kizárás} elvét, mely kimondja, hogy $\alpha = \beta = 1$ paraméterű modell esetén két, egymással versengő állatfaj nem létezhet egymás mellett egyensúlyban, a nagyobb $k$ paraméterű\footnote{$k$ jelentése a (\ref{subsub:3.1.1})-es alfejezetben tisztázott} faj kiszorítja a másikat az élőhelyről. Meg kellett azt is mutassuk, hogy egyensúly csak azonban az esetekben lehetséges, ahol teljesülnek az $\alpha k_{2} <k_{1}$ és $\beta k_{1} < k_{2}$ feltételek. \\
+Végül az utolsó modellt, a Lotka--Volterra-t kellett implementáljuk, majd annak fázisterét ábrázoljuk. Ezt a véges táplálék és telítődés hatásainak figyelembe vételével, valamint anélkül is meg kellett valósítsuk.
+
+\section{Elméleti alapok} \label{sec:3}
+\subsection{Alkalamazott modellek} \label{sub:3.1}
+Ebben a jegyzőkönyvben három populációdinamikai modellt vizsgáltunk. Ezek sorrendben a logisztikus-, a csatolt-logisztikus-, valamint a Lotka--Volterra-modellek voltak. Ezeket az alábbiakban a gyakorlat leírásának logikáját követve vázolom részletesebben.
+
+\subsubsection{Logisztikus modell} \label{subsub:3.1.1}
+Vizsgáljuk egy állatpopuláció gyarapodását az idő függvényében. Olyan esetben, amikor nincsen semmilyen befolyásoló tényező, mely vagy negatívan érintené, vagy korlátokat szabna a populáció fejlődésének, a növekedés sebessége az egyedszámmal lesz arányos. A populáció létszámának időfejlődése ekkor könnyen kifejezhető az alábbi módon:
+
+\begin{equation} \label{eq:1}
+    n \left( t + \Delta t \right)
+    =
+    n \left( t \right)
+    +
+    w_{be} n \left( t \right)
+\end{equation}
+ahol $w_{be}$ az ún. \emph{szaporodási ráta}. Ez a ráta határozza meg, hogy $\Delta t$ idő alatt hány utód születik a populáció létszámához viszonyítva. Triviális, hogy minél nagyobb $w_{be}$, annál gyorsabb a növekedés és fordítva. Ez alapján felírhatjuk a rendszer Master-egyenletét is, opcionálisan folytonos közelítésben:
+
+\begin{equation} \label{eq:2}
+    \frac{dn \left( t \right)}{dt}
+    =
+    w_{be} n \left( t \right)
+\end{equation}
+Ez a folytonos határeset akkor pontos, ha a populáció létszáma nagy, és emiatt az $w_{be}$ ráta folytonossá tétele nem okoz gondot. \\
+Az egyszerű (\ref{eq:2})-es differenciálegyenlet végleges megoldása ismert, ez egy exponenciális függvény:
+
+\begin{equation} \label{eq:3}
+    n \left( t \right)
+    =
+    e^{w_{be} t}
+\end{equation}
+Tehát a faj egyedszáma folyamatosan nőni fog a végtelenségig, a (\ref{eq:3})-as egyenletnek megfelelően. Hogy a valóságos helyzetet jobban tükrözzük, vezessünk be egy ún. \emph{halálozási rátát} is az eddigi $w_{be}$ mellé, és nevezzük ezt el $w_{ki}$-nak. Ekkor a Master-egyenlet a következőképpen alakul:
+
+\begin{equation} \label{eq:4}
+    \frac{dn \left( t \right)}{dt}
+    =
+    -w_{ki} n \left( t \right) + w_{be} n \left( t \right)
+\end{equation}
+Triviálisan látható, hogy az $- w_{ki} + w_{be}$ mennyiség előjetétől függően a populáció folyamatosan nő-e, vagy csökken. A (\ref{eq:4})-es differenciálegyenlet megoldása az előbbihez nagyon hasonló:
+
+\begin{equation} \label{eq:5}
+    n \left( t \right)
+    =
+    e^{\left( w_{be} - w_{ki} \right) t}
+\end{equation}
+Egy újabb szorzótényezővel, mely $n$ egyedszám függvénye, vegyük figyelembe, hogy a faj számára rendelkezésre táplálék, vagy élőhely korlátos mennyiségű/méretű:
+
+\begin{equation} \label{eq:6}
+    \frac{dn \left( t \right)}{dt}
+    =
+    \left( -w_{ki} + w_{be} \right) * n \left( t \right) * F \left( n \right)
+\end{equation}
+Vegyük $F \left( n \right)$ legegyszerűbb, lineáris modellét, mely kielégíthető az alábbi függvénnyel:
+
+\begin{equation} \label{eq:7}
+    F \left( n \right)
+    =
+    1 - \frac{n \left( t \right)}{k}
+\end{equation}
+Ekkor, ha $n = k$, a populáció nem nőhet tovább, ezzel egy felső határt szabva a faj egyedszámának. A (\ref{eq:6})-os egyenletet ezzel kibővítve az alábbi formát kapjuk:
+
+\begin{equation} \label{eq:8}
+    \frac{dn \left( t \right)}{dt}
+    =
+    \left( -w_{ki} + w_{be} \right) * n \left( t \right) * \left( 1 - \frac{n \left( t \right)}{k} \right)
+\end{equation}
+Ennek a differenciálegyenletnek a megoldását már könnyen felírhatjuk, ha használjuk az $x = n/k$ helyettesítést a következő módon:
+\begin{equation} \label{eq:9}
+    \frac{dx}{dt}
+    =
+    \left( -w_{ki} + w_{be} \right) * x * \left( 1 - x \right)
+\end{equation}
+Ennek segítségével a megoldás a következő:
+
+\begin{equation} \label{eq:10}
+    x \left( t \right)
+    =
+    \frac{1}{1 + \left( \dfrac{1}{x_{0}} - 1 \right) * e^{\left( -w_{ki} + w_{be} \right) t}}
+\end{equation}
+Ezt a kapott eredményt hívjuk logisztikus egyenletnek, melynek alakja egy növekedő, vagy csökkenő, szigmoid-jellegű görbe általános esetben. Mikor $-w_{ki} + w_{be} = 0$, a kapott görbe alakja egy konstans egyenes. \\
+A numerikus vizsgálat esetében majd a (\ref{eq:8})-as egyenletet fogjuk megoldani, míg az analitikus megoldás ábrázolásánál a (\ref{eq:10})-es egyenletet fogjuk illusztrálni.
+
+\subsubsection{Csatolt-logisztikus-modell} \label{subsub:3.1.2}
+Vizsgáljunk azt az esetet, amikor két faj él egyszerre egy területen, de egyik sem ragadozója a másiknak. Ilyen helyzetben ez a két populáció egymással fog versengeni a táplálékért és az élőhelyért. Az élelmesebb és életrevalóbb faj növekedik és túlél, a gyengébb pedig akár ki is halhat. Ezt az eddig tanultaknak megfelelően akár ki is következtethetjük, hogy ezt az esetet két, csatolt differenciálegyenlet írja le a fentiek alapján a következő módon:
+
+\begin{equation} \label{eq:11}
+    \frac{dn_1 \left( t \right)}{dt}
+    =
+    \left( -w_{ki_{1}} + w_{be_{1}} \right) * n_1 \left( t \right) * \left( 1 - \frac{n_1 + \alpha n_2}{k_1} \right)
+\end{equation}
+\begin{equation} \label{eq:12}
+    \frac{dn_2 \left( t \right)}{dt}
+    =
+    \left( -w_{ki_{2}} + w_{be_{2}} \right) * n_2 \left( t \right) * \left( 1 - \frac{n_2 + \beta n_1}{k_2} \right)
+\end{equation}
+
+\subsubsection{Lotka--Volterra-modell} \label{subsub:3.1.3}
+Ez a modell az olyan esetek tanulmányozására alkalmas, amikor egy növényevő, és azon a növényevőn ragadozó faj kölcsönhatását szeretnénk szimulálni. Vegyük példának a téma bemutatásaiban klasszikusan használt nyulak és rókák kölcsönhatásának esetét. A nyulak növényevők, az élőhelyen csak növényeket esznek, és szaporodnak. A rókák szintén ezen az élőhelyen élnek, azonban nyulakkal táplálkoznak, és mellette szaporodnak. Ha elegendő számú nyúl van folyamatosan, a rókák száma elkezd növekedni, azonban ezzel együtt a nyúlfogyasztási rátájuk ki. Emiatt a nyulak populációjának növekedése elkezd lassulni, majd egy kritikus ponton negatívba, populációcsökkenésbe megy át. Ahogy a nyulak száma ezután csökken, a rókák tápláléka is. Emiatt a rókák egyedszámának növekedése elkezd lassulni, majd szintén negatívba fordul. Ahogy csökken a rókák és így egyben a nyulak ragadozóinaks száma, a nyulak populációja újra növekedésnek indulhat. A rókák tápláléka ahogy növekedik, úgy a populációcsökkenésük rátája lecsökken, majd újra pozitívba fordul át. Ezután pedig kezdődik az egész elölről. Ezt a dinamikát próbálja a Lotka--Volterra-modell a valósághoz minél hűbben szimulálni. \\
+Első megközelítésben éljünk azzal a feltételezéssel, hogy a nyulak (Ny) és rókák (R) fogyasztása sehogy sem korlátozott. Ez annyit jelent, hogy feltesszük, hogy a növények sosem fogynak el és mindig rendelkezésre állnak, a rókák nyúlfogyasztási képessége és éhsége pedig szintén konstans. Ezt a helyzetet az alábbi Master-egyenletekkel írhatjuk le, ahol a gyakorlat leírásában is használt jelölésmódot alkalmazzuk (R-F és Ny-R cseréjével):
+
+\begin{equation} \label{eq:13}
+    \frac{dn_{\text{Ny}}}{dt} = a * n_{\text{Ny}} - b * n_{\text{Ny}} * n_{\text{R}}
+\end{equation}
+\begin{equation} \label{eq:14}
+    \frac{dn_{\text{R}}}{dt} = c * n_{\text{Ny}} * n_{\text{R}} - d * n_{\text{R}}
+\end{equation}
+Ahol $a$ a nyulak, $c * n_{\text{Ny}}$ pedig a rókák születésének, míg $b * n_{\text{R}}$ a nyulak, $d$ pedig a rókák halálozásának rátáját jelölik. Egyértelműen látszik az egyenletek alapján, hogy a nyulak halálozásának a rátáját a rókák száma, a rókák születési rátáját pedig a nyulak száma növeli egy szorzótényezőként manifesztálódva. A modellt realisztikusabbá tehetjük, ha a csatolt-logisztikus modellhez hasonlóan korlátozzuk a nyulak egyedszámát, azt feltételezve, hogy a rendelekzésükre álló táplálék nem véges (ahogy a valóságban is történik). Emellett adhatunk egy felső kapacitást a rókák nyúlfogyasztási képességeire is, hisz a valóságban se azonos ütemben, csillapítatlan éhséggel fogyasztják a nyulakat. Ezt az alábbi paramétercserékkel érhetjük el:
+
+\begin{equation} \label{eq:15}
+    a \to a * \left( 1 - \frac{n_{\text{Ny}}}{k} \right)
+\end{equation}
+\begin{equation} \label{eq:16}
+    n_{\text{Ny}} * n_{\text{R}} \to \frac{n_{\text{Ny}} * n_{\text{R}}}{1 + n_{\text{Ny}} * s}
+\end{equation}
+Bevezetve ezeket a változtatásokat a (\ref{eq:13})-as és (\ref{eq:14})-es egyenletek a következőképp alakulnak:
+
+\begin{equation} \label{eq:17}
+    \frac{dn_{\text{Ny}}}{dt} = a * \left( 1 - \frac{n_{\text{Ny}}}{k} \right) * n_{\text{Ny}} - b * \frac{n_{\text{Ny}} * n_{\text{R}}}{1 + n_{\text{Ny}} * s}
+\end{equation}
+\begin{equation} \label{eq:18}
+    \frac{dn_{\text{R}}}{dt} = c * \frac{n_{\text{Ny}} * n_{\text{R}}}{1 + n_{\text{Ny}} s} - d * n_{\text{R}}
+\end{equation}
+Melyből visszakaphatjuk az eredeti (\ref{eq:13})-as és (\ref{eq:14})-es egyenleteket a $k \to \infty$, $s \to 0$ határesetben. Épp emiatt csak az utóbbi, módosított egyenletet fogom használni a szimulációban, melyet megfelelően paraméterezve, közelíteni tudom hibahatáron belül akár a határesetet is.
+
+\section{Megvalósítás} \label{sec:4}
+Az eddigiekkel ellentétben nem volt előzetesen egy forráskód sem megadva számunkra, így mindent nekünk kellett megírnunk a feladatok teljesítéséhez. A forráskódokat \texttt{C++} nyelven implementáltam, amihez felhasználtam az eddigiekben már többször is alkalmazott \texttt{cpl} library-t is. Ez azért is volt hasznos, mert abban rengeteg olyan, már eredetileg, vagy az eddigiek során megírt függvény is szerepel, amiket ebben a témában is alkalmaznunk kell. Emellett így meg tudtam valamennyire őrizni a kurzuson készített kódok integritását, tehát a külsőleg is azonos látvány hatását. Az egyes modellek számára 1-1 külön forráskódot hoztam létre, melyek egymástól teljesen függetlenek. Több szempontból ez a megközelítés nem feltétlen optimális, ugyanis az egyes forráskódok között csak nagyon kis különbségek találhatóak, azonban így sokkal átláthatóbb és egyszerűbb formában tudtam őket egyesével megírni, így összességében javítva a programokon történő munka hatékonyságán. A forráskódokat az eddigiekhez hasonlóan egy saját batch file segítségével, benne a \texttt{clang} fordító felhasználásával fordítottam. A futtatható \texttt{exe} programokat egy Jupyter Notebook-ban futó Python 3 kernel segítségével indítottam, a szimuláció a kezdőfeltételeket szintén ebből a környezetből várja, bemenő paraméterek formájában. \\
+A kimenet minden esetben egy \texttt{.dat} file, mely minden sora egy-egy szimulációs lépésnek felel meg. Ez a file minden esetben tartalmazza a szimulált populációk aktuális számát, míg az adaptív lépéshosszal operáló esetben az aktuális lépésközöket is jegyzi. Emelett mind a fix-, mind az adaptív lépésközzel működő esetben a futásidőt is tartalmazza. A végleges forráskódok és a programokat futtató Notebook file mind elérhető GitHub-on\cite{github}.
+
+\section{Kiértékelés} \label{sec:5}
+
+
+\section{Futásidő} \label{sec:6}
+
+
+\section{Diszkusszió} \label{sec:7}
+A laborgyakorlat során megismerkedtem egy újabb iteratív módszerrel, a Velocity--Verlet-algoritmussal és annak a molekuladinamikai szimulációkat megreformáló funkcionalitásával. Vizsgáltam az algoritmus különböző közelítései és felhasznált módszerei közötti futásidő különbségeket, valamint több különböző kezdőfeltételű molekuladinamikai rendszert rendszert is szimulátam azok felhasználásával. Végül egy konkrét kezdőfeltétel esetén esetén kimértem több, az adott rendszerre jellemző fizikai mennyiség értékét is, melyekre mind a valós értékekkel megegyező nagyságrendű eredményt kaptam. \\
+A szimulációkról több animációt is készítettem, melyeken az egyes \texttt{md} módszerek működését ábrázoltam. Ezek megtekinthetőek a YouTube-on\cite{yt}.
+
+\end{multicols}
