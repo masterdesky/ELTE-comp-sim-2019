@@ -38,8 +38,8 @@ cpl::Vector derivates(const cpl::Vector& x) {
 }
 
 int main(int argc, char* argv[]) {
-    std::cout << " Population dynamics simulations with connected-logistic model\n"
-              << " -------------------------------------------------------------\n";
+    std::cout << " Population dynamics simulations with Lotka-Volterra-model\n"
+              << " ---------------------------------------------------------\n";
     
     std::string fixed_or_not = argv[1];         // Fixed or adaptive
     odeint = argv[2];                           // ODE integration method
@@ -98,6 +98,12 @@ int main(int argc, char* argv[]) {
             else if(odeint=="rkck") {
                 cpl::RKCKStep(x, dt, derivates);
             }
+            else if(odeint=="euler") {
+                cpl::EulerStep(x, dt, derivates);
+            }
+            else if(odeint=="eulercromer") {
+                cpl::EulerCromerStep(x, dt, derivates);
+            }
             
             steps++;
 
@@ -142,7 +148,16 @@ int main(int argc, char* argv[]) {
             else if(odeint=="rkck") {
                 cpl::adaptiveRKCKStep(x, dt, accuracy, derivates);
             }
-            
+
+            // No adaptove methods are available
+            // Falling back to fixed stepsize!
+            else if(odeint=="euler") {
+                cpl::EulerStep(x, dt, derivates);
+            }
+            else if(odeint=="eulercromer") {
+                cpl::EulerCromerStep(x, dt, derivates);
+            }
+
             step_size = x[0] - t_save;
             steps++;
             if(step_size < dt_min) {

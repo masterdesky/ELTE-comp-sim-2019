@@ -101,6 +101,12 @@ int main(int argc, char* argv[]) {
             else if(odeint=="rkck") {
                 cpl::RKCKStep(x, dt, derivates);
             }
+            else if(odeint=="euler") {
+                cpl::EulerStep(x, dt, derivates);
+            }
+            else if(odeint=="eulercromer") {
+                cpl::EulerCromerStep(x, dt, derivates);
+            }
             
             steps++;
 
@@ -144,6 +150,14 @@ int main(int argc, char* argv[]) {
             }
             else if(odeint=="rkck") {
                 cpl::adaptiveRKCKStep(x, dt, accuracy, derivates);
+            }
+            // No adaptove methods are available
+            // Falling back to fixed stepsize!
+            else if(odeint=="euler") {
+                cpl::EulerStep(x, dt, derivates);
+            }
+            else if(odeint=="eulercromer") {
+                cpl::EulerCromerStep(x, dt, derivates);
             }
             
             step_size = x[0] - t_save;
