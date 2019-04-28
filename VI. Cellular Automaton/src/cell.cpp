@@ -3,6 +3,7 @@
 #include <vector>
 #include <random>
 #include <typeinfo>
+#include <Windows.h>
 
 /*
 PLEASE READ DESCRIPTION!
@@ -80,12 +81,8 @@ static int height_life;                             // Height of the input life 
 static int position_x;                              // Position of input life at start along X axis
 static int position_y;                              // Position of input life at start along Y axis
 
-// For game mode 'user'
-std::string input_file_name;                        // Input file's name
-                                                    // Stores the user defined matrix (life)
-
 std::vector<std::vector<int>> arena;                // Current state of the whole arena
-std::vector<std::vector<int>> arena_border;         // Tracking border around the arena for boundary conditions
+std::vector<std::vector<int>> arena_new;            // Tracking previous state of arena for continuity
 std::vector<std::vector<int>> input_life;           // Initial life, placed on the game arena
 
 double roll_random_number() {
@@ -102,9 +99,9 @@ double roll_random_number() {
     return random_number;
 }
 
-void initial_random() {
+void create_arena_with_life() {
 
-    // We generate the life and the arena separately and then concat the two
+    // We generate the arena then concat the life into that
     // 1. Creating the arena with full of zeros
     for(unsigned int i = 0; i < height_arena; i++) {
         std::vector<int> tempvec;
@@ -112,9 +109,20 @@ void initial_random() {
             tempvec.push_back(0);
         }
         arena.push_back(tempvec);
+        arena_new.push_back(tempvec);
     }
 
-    // 2. Creating the random life
+    // 2. Place the life into the arena
+    for(unsigned int i = position_y; i < position_y + height_life; i++) {
+        for(unsigned int j = position_x; j < position_x + width_life; j++) {
+            arena[i][j] = input_life[i-position_y][j-position_x];
+        }
+    }
+}
+
+void initial_random() {
+
+    // Creating the random life
     for(unsigned int i = 0; i < height_life; i++) {
         std::vector<int> tempvec;
         for(unsigned int j = 0; j < width_life; j++) {
@@ -126,13 +134,6 @@ void initial_random() {
             }
         }
         input_life.push_back(tempvec);
-    }
-
-    // 3. Place the life into the arena
-    for(unsigned int i = position_y; i < position_y + height_life; i++) {
-        for(unsigned int j = position_x; j < position_x + width_life; j++) {
-            arena[i][j] = input_life[i-position_y][j-position_x];
-        }
     }
 }
 
@@ -183,25 +184,6 @@ void initial_user(std::ifstream& input_fs) {
                     << "Try again with a bigger arena or with a smaller life!" << std::endl;
 
         exit(-1);
-    }
-
-    else {
-        // We generate the arena then concat the life into that
-        // 1. Creating the arena with full of zeros
-        for(unsigned int i = 0; i < height_arena; i++) {
-            std::vector<int> tempvec;
-            for(unsigned int j = 0; j < width_arena; j++) {
-                tempvec.push_back(0);
-            }
-            arena.push_back(tempvec);
-        }
-
-        // 2. Place the life into the arena
-        for(unsigned int i = position_y; i < position_y + height_life; i++) {
-            for(unsigned int j = position_x; j < position_x + width_life; j++) {
-                arena[i][j] = input_life[i-position_y][j-position_x];
-            }
-        }
     }
 }
 
@@ -284,22 +266,22 @@ void step_with_simulation() {
             // Apply rules
             // I. Rule
             if(arena[i][j] == 1 && count_neighbours < gen_neighbours) {
-                arena[i][j] = 0;
+                arena_new[i][j] = 0;
             }
             // II. Rule
             else if(arena[i][j] == 1 && (count_neighbours == gen_neighbours || count_neighbours == gen_neighbours+1)) {
-                arena[i][j] = 1;
+                arena_new[i][j] = 1;
             }
             // III. Rule
             else if(arena[i][j] == 1 && count_neighbours > gen_neighbours+1) {
-                arena[i][j] = 0;
+                arena_new[i][j] = 0;
             }
             // IV. Rule
             else if(arena[i][j] == 0 && count_neighbours == gen_neighbours+1) {
-                arena[i][j] = 1;
+                arena_new[i][j] = 1;
             }
             else {
-                arena[i][j] = 0;
+                arena_new[i][j] = 0;
             }
         }
     }
@@ -337,13 +319,12 @@ int main(int argc, char* argv[]) {
     }
 
     else if(game_mode == "user") {
-        input_file_name = argv[9];                                  // Input file's name
-        std::ifstream input_fs(input_file_name.c_str());            // Create input stream for reading file
+        std::ifstream input_fs(argv[9]);            // Create input stream for reading file
         
-        height_life = 0;
         width_life = 0;
+        height_life = 0;
 
-        if (input_fs.good()) {
+        if (!input_fs.fail()) {
             // Generate arena and put input life into it
             // if it's possible. Else exit the program.
             initial_user(input_fs);
@@ -352,9 +333,22 @@ int main(int argc, char* argv[]) {
         }
 
         else {
-            std::cout << "File, named '" << input_file_name.c_str()  << "' does not exist or corrupted! Aboring..." << std::endl;
+            std::cout << "File, named '" << argv[9]  << "' does not exist or corrupted! Aboring..." << std::endl;
 
-            exit(-1);
+            width_life = 3;
+            height_life = 3;
+
+            std::vector<int> temp;
+            temp.push_back(1); temp.push_back(0); temp.push_back(0);
+            input_life.push_back(temp);
+            
+            temp.clear();
+            temp.push_back(0); temp.push_back(1); temp.push_back(1);
+            input_life.push_back(temp);
+            
+            temp.clear();
+            temp.push_back(1); temp.push_back(1); temp.push_back(0);
+            input_life.push_back(temp);
         }
     }
 
@@ -364,6 +358,8 @@ int main(int argc, char* argv[]) {
                   
         return(-1);
     }
+
+    create_arena_with_life();
 
     // Initialize border for various boundary conditions
     if(boundary_condition == "unbounded") {}
@@ -380,7 +376,7 @@ int main(int argc, char* argv[]) {
 
     // Write initial state to log
     for(unsigned int i = 0; i < height_arena; i++) {
-            for(unsigned int j = 0; j <width_arena; j++) {
+            for(unsigned int j = 0; j < width_arena; j++) {
                 dataFile << arena[i][j] << ' ';
             }
             dataFile << '\n';
@@ -391,8 +387,11 @@ int main(int argc, char* argv[]) {
 
         step_with_simulation();
 
+        // Refresh the arena's memory
+        arena = arena_new;
+
         for(unsigned int i = 0; i < height_arena; i++) {
-            for(unsigned int j = 0; j <width_arena; j++) {
+            for(unsigned int j = 0; j < width_arena; j++) {
                 dataFile << arena[i][j] << ' ';
             }
             dataFile << '\n';
