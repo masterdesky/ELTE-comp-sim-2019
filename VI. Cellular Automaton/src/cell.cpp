@@ -152,23 +152,31 @@ void initial_user(std::ifstream& input_fs) {
     // Reading characters one by one in file
     // Loop don't skip whitespaces
     char tempc;                         // Temps storage for read-in characters
+    std::vector<int> tempchars;
     while(input_fs >> std::noskipws >> tempc) {
+
         // If it's a 0 or 1, then put it into the input matrix
         if(tempc == '0' || tempc == '1') {
 
             // Convert char -> int
-            input_life[height_life][width_life] = tempc - '0';
+            tempchars.push_back(tempc - '0');
             width_life++;
         }
 
         else if(tempc == '\n') {
+
+            // Add tempvec to input_life and reset tempvec
+            input_life.push_back(tempchars);
+            tempchars.clear();
+
+            // Count new line of life-matrix
             height_life++;
 
             if(first_line == 0) {
                 first_line = width_life;
             }
 
-            if(first_line += width_life) {
+            if(first_line != width_life) {
                 std::cout << "Lines are not equally long in input file! Aborting..." << std::endl;
                 exit(-1);
             }
@@ -176,6 +184,7 @@ void initial_user(std::ifstream& input_fs) {
         }
     }
     // +1 at EOF, because that's not count as '\n'
+    input_life.push_back(tempchars);
     height_life++;
 
     // Check if its fit into the arena, if it's placed at the user-defined positon
@@ -193,7 +202,7 @@ void step_with_simulation() {
     // of every tiles in it. Then execute the game rules on the current tile.
     for(unsigned int i = 0; i < height_arena; i++) {
         for(unsigned int j = 0; j < width_arena; j++) {
-            
+
             // For counting number of neighbouring living cells
             int count_neighbours = 0;
 
@@ -202,11 +211,15 @@ void step_with_simulation() {
                 for(int c = -1; c <= 1; c++) {
 
                     // Skip the middle tile
-                    if(r != 0 && c != 0) {
+                    if(r == 0 && c == 0) {
+                        continue;
+                    }
+
+                    else {
                         // Indeces of the current tile along X and Y axes
                         int current_tile_x = j+c;
                         int current_tile_y = i+r;
-                    
+
                         // Free boundary conditions
                         // Boundary == 0 everywhere
                         if(boundary_condition == "unbounded") {
@@ -263,23 +276,28 @@ void step_with_simulation() {
                 }
             }
 
-            // Apply rules
+            // Apply rules of Conway's Game of Life
             // I. Rule
+            // If there are less neighbours, than N, the living tile dies
             if(arena[i][j] == 1 && count_neighbours < gen_neighbours) {
                 arena_new[i][j] = 0;
             }
             // II. Rule
+            // If there are N or N+1 neighbours, then the living tile lives to the next generation
             else if(arena[i][j] == 1 && (count_neighbours == gen_neighbours || count_neighbours == gen_neighbours+1)) {
                 arena_new[i][j] = 1;
             }
             // III. Rule
+            // If there are more, than N+1 neighbours, then the tile dies
             else if(arena[i][j] == 1 && count_neighbours > gen_neighbours+1) {
                 arena_new[i][j] = 0;
             }
             // IV. Rule
+            // If there are exactly N+1 neigbours, a dead tile turns to living
             else if(arena[i][j] == 0 && count_neighbours == gen_neighbours+1) {
                 arena_new[i][j] = 1;
             }
+            // In every else cases, the tile is dead and stays dead
             else {
                 arena_new[i][j] = 0;
             }
@@ -334,21 +352,6 @@ int main(int argc, char* argv[]) {
 
         else {
             std::cout << "File, named '" << argv[9]  << "' does not exist or corrupted! Aboring..." << std::endl;
-
-            width_life = 3;
-            height_life = 3;
-
-            std::vector<int> temp;
-            temp.push_back(1); temp.push_back(0); temp.push_back(0);
-            input_life.push_back(temp);
-            
-            temp.clear();
-            temp.push_back(0); temp.push_back(1); temp.push_back(1);
-            input_life.push_back(temp);
-            
-            temp.clear();
-            temp.push_back(1); temp.push_back(1); temp.push_back(0);
-            input_life.push_back(temp);
         }
     }
 
@@ -387,7 +390,7 @@ int main(int argc, char* argv[]) {
 
         step_with_simulation();
 
-        // Refresh the arena's memory
+        // Refresh the arena's memory to
         arena = arena_new;
 
         for(unsigned int i = 0; i < height_arena; i++) {
