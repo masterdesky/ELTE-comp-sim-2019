@@ -2,8 +2,6 @@
 #include <fstream>
 #include <vector>
 #include <random>
-#include <typeinfo>
-#include <Windows.h>
 
 /*
 PLEASE READ DESCRIPTION!
