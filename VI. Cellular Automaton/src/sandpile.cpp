@@ -40,7 +40,7 @@ void init_starting_pos() {
             }
             else {
                 if(init_mode == "random") {
-                    temp_vec.push_back(roll_random_number(scale_factor));
+                    temp_vec.push_back(static_cast<int>(roll_random_number(scale_factor+1)));
                 }
                 else if(init_mode == "unstable") {
                     temp_vec.push_back(scale_factor);
@@ -53,6 +53,12 @@ void init_starting_pos() {
     new_sandpile = sandpile;
 }
 
+// Abelian sandpile model
+// If F(x,y) > 3
+// Then: 
+//      F(x,y) -> F(x,y) - 4
+//      F(x+-1,y) -> F(x+-1,y) + 1
+//      F(x,y+-1) -> F(x,y+-1) + 1
 void step_with_simulation() {
 
     for(int i = 1; i < height-1; i++) {
@@ -61,31 +67,10 @@ void step_with_simulation() {
                 new_sandpile[i][j] -= critical_slope + 1;
                 
                 // Add them to its neighbours
-                if(critical_slope + 1 == 4) {
-                    new_sandpile[i+1][j] += 1;
-                    new_sandpile[i-1][j] += 1;
-                    new_sandpile[i][j+1] += 1;
-                    new_sandpile[i][j-1] += 1;
-                }
-                else {
-                    for(int k = 0; k < scale_factor - critical_slope; k++) {
-                        
-                        int rolled = static_cast<int>(roll_random_number(4));
-                            
-                        if(rolled == 0) {
-                            new_sandpile[i+1][j] += 1;
-                        }
-                        else if(rolled == 1) {
-                            new_sandpile[i-1][j] += 1;
-                        }
-                        else if(rolled == 2) {
-                            new_sandpile[i][j+1] += 1;
-                        }
-                        else if(rolled == 3) {
-                            new_sandpile[i][j-1] += 1;
-                        }
-                    }
-                }
+                new_sandpile[i+1][j] += 1;
+                new_sandpile[i-1][j] += 1;
+                new_sandpile[i][j+1] += 1;
+                new_sandpile[i][j-1] += 1;
             }
         }
     }
@@ -99,10 +84,12 @@ int main(int argc, char* argv[]) {
 
     width = atoi(argv[2]) + 2;              // Width of the arena for the sandpile   | +1s span a 1x1 border
     height = atoi(argv[3]) + 2;             // Height of the arena for the sandpile  | around the actual arena
-    scale_factor = atoi(argv[4]);           // Maximum possible value for a slope
-    critical_slope = atoi(argv[5]);         // Critical degree of slope before avalanche occurs
 
-    int sim_steps = atoi(argv[6]);          // Total number of simulated steps
+    int sim_steps = atoi(argv[4]);          // Total number of simulated steps
+
+    scale_factor = atoi(argv[5]);           // Maximum possible value for a slope
+    //critical_slope = atoi(argv[6]);         // Critical degree of slope before avalanche occurs
+    critical_slope = 3;
 
     // Initializing the starting position of the sandpile
     init_starting_pos();
