@@ -81,6 +81,7 @@ static int position_y;                              // Position of input life at
 
 std::vector<std::vector<int>> arena;                // Current state of the whole arena
 std::vector<std::vector<int>> arena_new;            // Tracking previous state of arena for continuity
+std::vector<std::vector<int>> arena_borders;        // Constant arena borders for boundary conditions
 std::vector<std::vector<int>> input_life;           // Initial life, placed on the game arena
 
 double roll_random_number() {
@@ -98,6 +99,44 @@ double roll_random_number() {
 }
 
 void create_arena_with_life() {
+
+    // 0. Generating boundary conditions around game arena
+    for(unsigned int i = 0; i < height_arena+2; i++) {
+        std::vector<int> tempvec;
+        for(unsigned int j = 0; j < width_arena+2; j++) {
+
+            if(i == 0 || j == 0 || i == height_arena + 1 || j == width_arena + 1) {
+
+                if(boundary_condition == "unbounded") {
+                    tempvec.push_back(0);
+                }
+                else if(boundary_condition == "periodic") {
+                    tempvec.push_back(0);
+                }
+                else if(boundary_condition == "living") {
+                    tempvec.push_back(1);
+                }
+                else if(boundary_condition == "random") {
+
+                    if(roll_random_number() < 0.5) {
+                        tempvec.push_back(0);
+                    }
+                    else {
+                        tempvec.push_back(1);
+                    }
+                }
+                else {
+                    tempvec.push_back(0);
+                }
+               
+            }
+            else {
+                tempvec.push_back(0);
+            }
+        }
+        arena_borders.push_back(tempvec);
+    }
+    
 
     // We generate the arena then concat the life into that
     // 1. Creating the arena with full of zeros
@@ -257,13 +296,8 @@ void step_with_simulation() {
                         else if(boundary_condition == "random") {
                             if(current_tile_x == -1 || current_tile_x == width_arena
                                || current_tile_y == -1 || current_tile_y == height_arena) {
-                                if(roll_random_number() < 0.5) {
-                                    continue;
-                                }
-                                else {
-                                    count_neighbours++;
-                                    continue;
-                                }
+
+                                count_neighbours += arena_borders[i+r][j+c];
                             }
                         }
 
