@@ -297,7 +297,8 @@ void step_with_simulation() {
                             if(current_tile_x == -1 || current_tile_x == width_arena
                                || current_tile_y == -1 || current_tile_y == height_arena) {
 
-                                count_neighbours += arena_borders[i+r][j+c];
+                                count_neighbours += arena_borders[i+1+r][j+1+c];
+                                continue;
                             }
                         }
 
