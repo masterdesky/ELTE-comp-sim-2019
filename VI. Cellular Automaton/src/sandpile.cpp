@@ -2,8 +2,10 @@
 #include <fstream>
 #include <vector>
 #include <random>
+#include <math.h>
 
 std::string init_mode;                      // Initial conditions of the sandpile model (random or unstable)
+std::string save_mode;                      // Whether or not save the entire run, but only the last state
 
 static int width;                           // Width of the arena for the sandpile
 static int height;                          // Height of the arena for the sandpile
@@ -50,6 +52,8 @@ void init_starting_pos() {
         sandpile.push_back(temp_vec);
     }
 
+    //sandpile[floor(height/2)][floor(width/2)] = critical_slope+1;
+
     new_sandpile = sandpile;
 }
 
@@ -81,14 +85,15 @@ int main(int argc, char* argv[]) {
               << " -----------------\n";
 
     init_mode = argv[1];                    // Initial conditions of the sandpile model (random or unstable)
+    save_mode = argv[2];                    // Whether or not save the entire run, but only the last state
 
-    width = atoi(argv[2]) + 2;              // Width of the arena for the sandpile   | +1s span a 1x1 border
-    height = atoi(argv[3]) + 2;             // Height of the arena for the sandpile  | around the actual arena
+    width = atoi(argv[3]) + 2;              // Width of the arena for the sandpile   | +1s span a 1x1 border
+    height = atoi(argv[4]) + 2;             // Height of the arena for the sandpile  | around the actual arena
 
-    int sim_steps = atoi(argv[4]);          // Total number of simulated steps
+    int sim_steps = atoi(argv[5]);          // Total number of simulated steps
 
-    scale_factor = atoi(argv[5]);           // Maximum possible value for a slope
-    //critical_slope = atoi(argv[6]);         // Critical degree of slope before avalanche occurs
+    scale_factor = atoi(argv[6]);           // Maximum possible value for a slope
+    //critical_slope = atoi(argv[7]);         // Critical degree of slope before avalanche occurs
     critical_slope = 3;
 
     // Initializing the starting position of the sandpile
@@ -99,14 +104,17 @@ int main(int argc, char* argv[]) {
     dataFile.open("..\\out\\sandpile.dat");
 
     // Write initial state to log
-    for(unsigned int i = 1; i < height-1; i++) {
-            for(unsigned int j = 1; j < width-1; j++) {
-                dataFile << sandpile[i][j] << ' ';
+    if(save_mode == "full") {
+        for(unsigned int i = 1; i < height-1; i++) {
+                for(unsigned int j = 1; j < width-1; j++) {
+                    dataFile << sandpile[i][j] << ' ';
+                }
+                dataFile << '\n';
             }
             dataFile << '\n';
-        }
-        dataFile << '\n';
+    }
 
+    int last_step;
     for(unsigned int steps = 0; steps < sim_steps; steps++) {
 
         step_with_simulation();
@@ -114,6 +122,42 @@ int main(int argc, char* argv[]) {
         // Refresh the arena's memory to
         sandpile = new_sandpile;
 
+        // Check if system is stable already
+        bool stability_test = true;
+
+        for(unsigned int i = 1; i < height-1; i++) {
+            for(unsigned int j = 1; j < width-1; j++) {
+                if(sandpile[i][j] > 3) {
+                    stability_test = false;
+                    break;
+                }
+            }
+            if(stability_test == false) {
+                break;
+            }
+        }
+
+        last_step = steps+1;
+
+        if(stability_test == true) {            
+            break;
+        }
+
+        // Save the current step if it was ordered
+        if(save_mode == "full") {
+            for(unsigned int i = 1; i < height-1; i++) {
+                for(unsigned int j = 1; j < width-1; j++) {
+                    dataFile << sandpile[i][j] << ' ';
+                }
+                dataFile << '\n';
+            }
+            dataFile << '\n';
+        }
+
+    }
+
+    if(save_mode != "full") {
+        // Save the last state of the system
         for(unsigned int i = 1; i < height-1; i++) {
             for(unsigned int j = 1; j < width-1; j++) {
                 dataFile << sandpile[i][j] << ' ';
@@ -122,4 +166,7 @@ int main(int argc, char* argv[]) {
         }
         dataFile << '\n';
     }
+
+    std::cout << "Last step in simulation: " << last_step << std::endl;
+    return(last_step);
 }

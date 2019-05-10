@@ -10,7 +10,7 @@ import imageio
 sns.set_style(style='whitegrid')
 # Others
 steps = 1
-fps = 40
+fps = 60
 
 
 def ANIMATE_VIDEO(path, video_path, gen_video_title, packages):
