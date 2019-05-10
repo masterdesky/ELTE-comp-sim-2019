@@ -1,0 +1,118 @@
+\usepackage[utf8]{inputenc}
+\usepackage[english,magyar]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath}
+\usepackage{cancel}
+\usepackage{mathrsfs}
+
+% Code snippets
+\usepackage{minted}
+\def\code#1{\texttt{#1}}
+
+% Colour
+\usepackage{color}
+\usepackage[dvipsnames]{xcolor}
+
+% Quotes
+\usepackage[autostyle=false]{csquotes}
+\newcommand{\q}[1]{„#1''} % Redefine quotations
+
+% Tables
+\usepackage{makecell}
+
+% Required for inserting image files
+\usepackage{graphicx}
+\usepackage[skip=2pt, font={scriptsize}, justification=centering]{caption}
+\graphicspath{{./images/}}
+\usepackage{wrapfig}
+
+% Section titles
+\usepackage{titlesec}
+\titleformat{\section}{\centering\bfseries\normalsize}{\thesection. }{0em}{\MakeUppercase}
+\titleformat{\subsection}{\centering\bfseries\small}{\thesubsection. }{0em}{\MakeUppercase}
+
+% Hyperlinks
+\usepackage[unicode]{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,      
+    urlcolor=cyan,
+    citecolor = cyan,
+    pdftitle={Population Dynamics - PB},
+    pdfpagemode=FullScreen,
+}
+
+% \cdot instead of asterisk (*) symbol
+\mathcode`\*="8000
+{\catcode`\*\active\gdef*{\cdot}}
+
+% Double underline
+\def\doubleunderline#1{\underline{\underline{#1}}}
+
+% Two columns
+\usepackage{multicol}
+\setlength\columnsep{30pt}
+
+%----------------------------------------------------------------------------------------
+%	BIBLIOGRAPHY
+%----------------------------------------------------------------------------------------
+% Using biblatex with bibtex backend and natbib citation styles (natbib=true, backend=bibtex)
+% In bibliography, citations are numbered by appearance (bibstyle=numeric)
+\usepackage[citestyle=authoryear, bibstyle=numeric, natbib=true, backend=bibtex, sorting=none]{biblatex}
+\addbibresource{bibliography.bib}
+
+% Hyperlink both author and year in citations
+% Taken from stackexchange: https://tex.stackexchange.com/questions/1687/hyperlink-name-with-biblatex-authoryear/25972
+% The answer originates from here: https://groups.google.com/forum/#!topic/comp.text.tex/rSPhG2jd3Ks
+\DeclareCiteCommand{\cite}
+  {\usebibmacro{prenote}}
+  {\usebibmacro{citeindex}%
+   \printtext[bibhyperref]{\usebibmacro{cite}}}
+  {\multicitedelim}
+  {\usebibmacro{postnote}}
+
+\DeclareCiteCommand*{\cite}
+  {\usebibmacro{prenote}}
+  {\usebibmacro{citeindex}%
+   \printtext[bibhyperref]{\usebibmacro{citeyear}}}
+  {\multicitedelim}
+  {\usebibmacro{postnote}}
+
+\DeclareCiteCommand{\parencite}[\mkbibparens]
+  {\usebibmacro{prenote}}
+  {\usebibmacro{citeindex}%
+    \printtext[bibhyperref]{\usebibmacro{cite}}}
+  {\multicitedelim}
+  {\usebibmacro{postnote}}
+
+\DeclareCiteCommand*{\parencite}[\mkbibparens]
+  {\usebibmacro{prenote}}
+  {\usebibmacro{citeindex}%
+    \printtext[bibhyperref]{\usebibmacro{citeyear}}}
+  {\multicitedelim}
+  {\usebibmacro{postnote}}
+
+\DeclareCiteCommand{\footcite}[\mkbibfootnote]
+  {\usebibmacro{prenote}}
+  {\usebibmacro{citeindex}%
+  \printtext[bibhyperref]{ \usebibmacro{cite}}}
+  {\multicitedelim}
+  {\usebibmacro{postnote}}
+
+\DeclareCiteCommand{\footcitetext}[\mkbibfootnotetext]
+  {\usebibmacro{prenote}}
+  {\usebibmacro{citeindex}%
+   \printtext[bibhyperref]{\usebibmacro{cite}}}
+  {\multicitedelim}
+  {\usebibmacro{postnote}}
+
+\DeclareCiteCommand{\textcite}
+  {\boolfalse{cbx:parens}}
+  {\usebibmacro{citeindex}%
+   \printtext[bibhyperref]{\usebibmacro{textcite}}}
+  {\ifbool{cbx:parens}
+     {\bibcloseparen\global\boolfalse{cbx:parens}}
+     {}%
+   \multicitedelim}
+  {\usebibmacro{textcite:postnote}}
